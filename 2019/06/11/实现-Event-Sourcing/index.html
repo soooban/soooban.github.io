@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>实现 Event Sourcing | 搜办小组</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSoucing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一些">
+<meta name="keywords" content="Event Sourcing,CQRS,Axon">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实现 Event Sourcing">
+<meta property="og:url" content="http://yoursite.com/2019/06/11/实现-Event-Sourcing/index.html">
+<meta property="og:site_name" content="搜办小组">
+<meta property="og:description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSoucing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一些">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB07deaa43972f6f1bc5c35c18db67884f?method=download&shareKey=afca0c0ceb799824f9cb44104275cb6f">
+<meta property="og:updated_time" content="2019-06-11T03:08:57.380Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="实现 Event Sourcing">
+<meta name="twitter:description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSoucing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一些">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB07deaa43972f6f1bc5c35c18db67884f?method=download&shareKey=afca0c0ceb799824f9cb44104275cb6f">
+  
+    <link rel="alternate" href="/atom.xml" title="搜办小组" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">搜办小组</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-实现-Event-Sourcing" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/06/11/实现-Event-Sourcing/" class="article-date">
+  <time datetime="2019-06-11T03:07:57.000Z" itemprop="datePublished">2019-06-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      实现 Event Sourcing
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="实现-Event-Soucing"><a href="#实现-Event-Soucing" class="headerlink" title="实现 Event Soucing"></a>实现 Event Soucing</h2><p>在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSoucing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。</p>
+<h3 id="Spring-Boot-工程搭建"><a href="#Spring-Boot-工程搭建" class="headerlink" title="Spring Boot 工程搭建"></a>Spring Boot 工程搭建</h3><p>打开 <a href="http://start.spring.io/" target="_blank" rel="noopener">http://start.spring.io/</a> 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一些之后会用到的服务：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB07deaa43972f6f1bc5c35c18db67884f?method=download&shareKey=afca0c0ceb799824f9cb44104275cb6f" alt="image"></p>
+<p>添加配置文件: </p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line"><span class="attr">  application:</span></span><br><span class="line"><span class="attr">    name:</span> <span class="string">event-sourcing-service</span></span><br><span class="line"><span class="attr">  datasource:</span></span><br><span class="line"><span class="attr">    url:</span> <span class="attr">jdbc:mysql://localhost:3306/event?useUnicode=true&amp;autoReconnect=true&amp;rewriteBatchedStatements=TRUE</span></span><br><span class="line"><span class="attr">    username:</span> <span class="string">root</span></span><br><span class="line"><span class="attr">    password:</span> <span class="string">root</span></span><br><span class="line"><span class="attr">  jpa:</span></span><br><span class="line"><span class="attr">    hibernate:</span></span><br><span class="line"><span class="attr">      ddl-auto:</span> <span class="string">update</span></span><br><span class="line"><span class="attr">      use-new-id-generator-mappings:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    show-sql:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    properties:</span></span><br><span class="line">      <span class="string">hibernate.dialect:</span> <span class="string">org.hibernate.dialect.MySQL55Dialect</span></span><br></pre></td></tr></table></figure>
+
+<p>为了便于测试，这里我开启了 JPA 的自动更新，开发中你可能会使用 flyway 或者其他工具来管理数据库 schema 以及数据迁移。至此一个简单的服务就搭建完毕了。</p>
+<h3 id="Axon-依赖和配置"><a href="#Axon-依赖和配置" class="headerlink" title="Axon 依赖和配置"></a>Axon 依赖和配置</h3><ol>
+<li>依赖添加</li>
+</ol>
+<p>搭建好了工程之后，我们正式开始做一些 Axon 相关的事情，这个工程我们用一个简单的 Contract 业务来作为demo，首先添加依赖：<br>添加 Axon 依赖:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- https://mvnrepository.com/artifact/org.axonframework/axon-spring-boot-starter --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.axonframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>axon-spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>4.1.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">exclusions</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">exclusion</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.axonframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>axon-server-connector<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">exclusion</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">exclusions</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- https://mvnrepository.com/artifact/com.google.guava/guava axon 依赖了 guava--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.google.guava<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>guava<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>27.1-jre<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>解释一下，axon 从 4.0 开始加入了 axon-server 这么一个东西，目的是将 event 的存储和分发剥离，以更好的发挥微服务的优点，但是在项目中引用这么一个不透明的东西感觉上不太好，所以这里就不采用 axon-server 了。<code>axon-spring-boot-starter</code> 就会采用 <code>EmbeddedEventStore</code> ，默认使用的是 JPA ，启动之后你也会发现 JPA 在数据库中创建了 5 张表，分别是 <code>association_value_entry</code> <code>domain_event_entry saga_entry</code> <code>snapshot_event_entry</code> <code>token_entry</code>，<code>domain_event_entry</code> 用来存储事件，<code>snapshot_event_entry</code> 用来存储快照，<code>token_entry</code> 用来记录 tracking event 的争夺，其他两张表用来存户 saga。</p>
+<ol start="2">
+<li>Axon 的配置</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">axon:</span></span><br><span class="line"><span class="attr">  serializer:</span></span><br><span class="line"><span class="attr">    general:</span> <span class="string">jackson</span></span><br></pre></td></tr></table></figure>
+
+<p>这里指定使用了<code>Jackson</code>来进行序列化，模式 Axon 是使用 XML 进行序列化的，不方便查看，并且之后的事件升级都会很麻烦，所以进行了替换。</p>
+<h3 id="Axon-Domain-Model-定义"><a href="#Axon-Domain-Model-定义" class="headerlink" title="Axon Domain Model 定义"></a>Axon Domain Model 定义</h3><ol>
+<li>定义 aggregate</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ContractInterface</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function">Long <span class="title">getId</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NotBlank</span></span><br><span class="line">    <span class="function">String <span class="title">getName</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NotBlank</span></span><br><span class="line">    <span class="function">String <span class="title">getPartyA</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NotBlank</span></span><br><span class="line">    <span class="function">String <span class="title">getPartyB</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@Aggregate</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ContractAggregate</span> <span class="keyword">implements</span> <span class="title">ContractInterface</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@AggregateIdentifier</span></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String partyA;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String partyB;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> deleted = <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>定义 commands</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractCommand</span> </span>&#123;</span><br><span class="line">    <span class="meta">@TargetAggregateIdentifier</span></span><br><span class="line">    <span class="keyword">private</span> Long identifier;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UpdateContractCommand</span> <span class="keyword">extends</span> <span class="title">AbstractCommand</span> <span class="keyword">implements</span> <span class="title">ContractInterface</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String partyA;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String partyB;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">UpdateContractCommand</span><span class="params">(Long identifier, String name, String partyA, String partyB)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(identifier);</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">        <span class="keyword">this</span>.partyA = partyA;</span><br><span class="line">        <span class="keyword">this</span>.partyB = partyB;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CreateContractCommand</span> <span class="keyword">extends</span> <span class="title">UpdateContractCommand</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CreateContractCommand</span><span class="params">(Long identifier, String name, String partyA, String partyB)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(identifier, name, partyA, partyB);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DeleteContractCommand</span> <span class="keyword">extends</span> <span class="title">AbstractCommand</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DeleteContractCommand</span><span class="params">(Long identifier)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(identifier);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>定义 events</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractEvent</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@TargetAggregateIdentifier</span></span><br><span class="line">    <span class="keyword">private</span> Long identifier;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ContractUpdatedEvent</span> <span class="keyword">extends</span> <span class="title">AbstractEvent</span> <span class="keyword">implements</span> <span class="title">ContractInterface</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String partyA;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String partyB;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ContractUpdatedEvent</span><span class="params">(Long identifier, String name, String partyA, String partyB)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(identifier);</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">        <span class="keyword">this</span>.partyA = partyA;</span><br><span class="line">        <span class="keyword">this</span>.partyB = partyB;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ContractCreatedEvent</span> <span class="keyword">extends</span> <span class="title">ContractUpdatedEvent</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ContractCreatedEvent</span><span class="params">(Long identifier, String name, String partyA, String partyB)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(identifier, name, partyA, partyB);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ContractDeletedEvent</span> <span class="keyword">extends</span> <span class="title">AbstractEvent</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ContractDeletedEvent</span><span class="params">(Long identifier)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(identifier);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里只抽象了统一的 command 和 event，在实际的业务开发过程中可以有更多的抽象。</p>
+<h3 id="实现各个-Handler"><a href="#实现各个-Handler" class="headerlink" title="实现各个 Handler"></a>实现各个 Handler</h3><p>在这里我们实现 Event Soucing 的模式，把各个 Handler 都放在 aggregate 里面。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@CommandHandler</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ContractAggregate</span><span class="params">(CreateContractCommand command, MetaData metaData, UIDGenerator generator)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">null</span> == command.getIdentifier()) &#123;</span><br><span class="line">        command.setIdentifier(generator.getId());</span><br><span class="line">    &#125;</span><br><span class="line">    AggregateLifecycle.apply(<span class="keyword">new</span> ContractCreatedEvent(command.getIdentifier(), command.getName(), command.getPartyA(), command.getPartyB()), metaData);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@CommandHandler</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">on</span><span class="params">(UpdateContractCommand command, MetaData metaData)</span> </span>&#123;</span><br><span class="line">    AggregateLifecycle.apply(<span class="keyword">new</span> ContractUpdatedEvent(command.getIdentifier(), command.getName(), command.getPartyA(), command.getPartyB()), metaData);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@CommandHandler</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">on</span><span class="params">(DeleteContractCommand command, MetaData metaData)</span> </span>&#123;</span><br><span class="line">    AggregateLifecycle.apply(<span class="keyword">new</span> ContractDeletedEvent(command.getIdentifier()), metaData);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@EventSourcingHandler</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">on</span><span class="params">(ContractCreatedEvent event)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.setIdentifier(event.getIdentifier());</span><br><span class="line">    <span class="keyword">this</span>.onUpdate(event);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@EventSourcingHandler</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">onUpdate</span><span class="params">(ContractUpdatedEvent event)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.setName(event.getName());</span><br><span class="line">    <span class="keyword">this</span>.setPartyA(event.getPartyA());</span><br><span class="line">    <span class="keyword">this</span>.setPartyB(event.getPartyB());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@EventSourcingHandler</span>(payloadType = ContractDeletedEvent.class)</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">on</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.setDeleted(<span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>这里看到有一个 CommandHandler 的注解写在了构造方法上，那么在处理这个 Command 的时候，将会自动创建一个对象。另外这里的 MetaData 是在 command 发送的时候顺带的附加信息，可以是用户信息，机器信息等等，后续也会涉及这部分，这里就不深入了。</p>
+</li>
+<li><p>启动项目后，JPA 应该会在数据库中生成几张表，其中 worker_id 是之前我们编写的 Spring Cloud 的 ID 生成器所产生的，剩余的表都是 Axon 自己产生的，这里我使用的数据库并没有使用<code>mb4</code>编码，因为在<code>mb4</code>编码下 Axon 的索引会过长，这个也不是问题，因为实际开发过程中，我们可以将生成的语句自己修改了下，将主键的长度改小一点即可，后面在完善的过程中也会涉及到。</p>
+</li>
+</ul>
+<h3 id="编写接口"><a href="#编写接口" class="headerlink" title="编写接口"></a>编写接口</h3><p>aggreate 以及各个 handler 都已经写完了，那么我们开始编写接口，让工程可以顺利的跑起来。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/contracts"</span>)</span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ContractController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> CommandGateway commandGateway;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostMapping</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">createContract</span><span class="params">(@RequestBody @Valid CreateContractCommand command)</span> </span>&#123;</span><br><span class="line">        commandGateway.send(command);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PutMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateContract</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Long id, @RequestBody @Valid UpdateContractCommand command) </span>&#123;</span><br><span class="line">        command.setIdentifier(id);</span><br><span class="line">        commandGateway.send(command);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@DeleteMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">deleteContract</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Long id) </span>&#123;</span><br><span class="line">        commandGateway.send(<span class="keyword">new</span> DeleteContractCommand(id));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>启动工程并顺序执行 POST UPDATE DELETE 操作，你会发现<code>domain_event_entry</code>中多了三条记录，这张表就是用来记录事件的，可以看到这里详细的记录了每个事件的发生时间、内容、附加信息、类型等信息。至此本次 Event Soucing 的例子就结束了，主要将传统的增删改操作改造成了事件记录的形式。下次将会从 CQRS 的角度实现数据的读取。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/06/11/实现-Event-Sourcing/" data-id="cjwr87vvf000by81dtnk9f9e9" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/06/10/UID-Generator/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">UID Generator</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Axon/">Axon</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Axon/" style="font-size: 15px;">Axon</a> <a href="/tags/CQRS/" style="font-size: 20px;">CQRS</a> <a href="/tags/Event-Sourcing/" style="font-size: 20px;">Event Sourcing</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/06/11/实现-Event-Sourcing/">实现 Event Sourcing</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/10/UID-Generator/">UID Generator</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/10/Event-Sourcing-And-CQRS/">Event Sourcing And CQRS</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/26/Hexo的介绍以及使用/">Hexo的介绍以及使用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Jokefaker<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
