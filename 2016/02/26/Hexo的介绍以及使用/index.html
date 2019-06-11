@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head><meta name="generator" content="Hexo 3.8.0">
   <meta charset="utf-8">
   
   <title>Hexo的介绍以及使用 | 搜办小组</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="简介hexo是一个基于Node.js的静态博客程序，其编译上百篇文字只需要几秒。hexo生成的静态网页可以直接放到GitHub Pages，BAE，SAE等平台上。基于Github Pages的博客系统还是很流行的，所以我打算将我们以后所有的session全都放到这个平台上面，这样对内有一个记录，以后新人进来可以查阅，对外也有一定的输出，如果以后质量上去了，还是有希望做到有一定的影响力的。关于se">
+<meta name="keywords" content="hexo">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Hexo的介绍以及使用">
 <meta property="og:url" content="http://yoursite.com/2016/02/26/Hexo的介绍以及使用/index.html">
 <meta property="og:site_name" content="搜办小组">
 <meta property="og:description" content="简介hexo是一个基于Node.js的静态博客程序，其编译上百篇文字只需要几秒。hexo生成的静态网页可以直接放到GitHub Pages，BAE，SAE等平台上。基于Github Pages的博客系统还是很流行的，所以我打算将我们以后所有的session全都放到这个平台上面，这样对内有一个记录，以后新人进来可以查阅，对外也有一定的输出，如果以后质量上去了，还是有希望做到有一定的影响力的。关于se">
+<meta property="og:locale" content="default">
 <meta property="og:updated_time" content="2019-06-10T08:59:49.048Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Hexo的介绍以及使用">
@@ -24,11 +26,11 @@
   
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  <link rel="stylesheet" href="/css/style.css">
   
 
 </head>
-
+</html>
 <body>
   <div id="container">
     <div id="wrap">
@@ -57,7 +59,7 @@
         <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
       </div>
     </div>
   </div>
@@ -86,30 +88,37 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>hexo是一个基于Node.js的静态博客程序，其编译上百篇文字只需要几秒。hexo生成的静态网页可以直接放到GitHub Pages，BAE，SAE等平台上。基于Github Pages的博客系统还是很流行的，所以我打算将我们以后所有的session全都放到这个平台上面，这样对内有一个记录，以后新人进来可以查阅，对外也有一定的输出，如果以后质量上去了，还是有希望做到有一定的影响力的。关于session大家可以放开了讲，也可以并不完全是技术方面的，只要是分享即可:]。</p>
-<h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><h3 id="Node"><a href="#Node" class="headerlink" title="Node"></a>Node</h3><p>开发人员应该对Node比较熟悉了，就算不熟悉或多或少也是听到过的，没听到过的也没关系，到<a href="https://nodejs.org/en/" target="_blank" rel="external">Node官网</a>下载最新的版本安装即可。</p>
-<h3 id="Git"><a href="#Git" class="headerlink" title="Git"></a>Git</h3><p>同样要使用hexo需要安装Git，相信大部分也都已经安装了，如果你从来没了解过Git，建议去<a href="https://git-scm.com/" target="_blank" rel="external">Git官网</a>下载安装最新版本，同时使用谷歌搜索引擎简单的了解一下Git的使用:]。</p>
-<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h3><p><a href="https://github.com/" target="_blank" rel="external">Github</a>是一个非常好的地方，不管是设计狮、攻城狮、产品狗都可以去了解一下，上面有很多值得学习或者阅读的东西。前面说了hexo是可以将静态文件放多很多的平台上的，我们这里就使用比较流行的Github Pages，所以最起码你得有个账号。</p>
-<h3 id="MarkDown-编辑器"><a href="#MarkDown-编辑器" class="headerlink" title="MarkDown 编辑器"></a>MarkDown 编辑器</h3><p>大家知道博客的内容是需要排版的，而HTML不是人人都会的，所以这里我推荐都使用MarkDown语法来书写文章，同时这也会给你带来一些好处，比如我们现在使用的Gitlab还有前面提到的Github，里面所有的issue、comment等等都是使用MarkDown语法的。同时你也不必担心它有多难学，实际上一般使用非常简单，每款MarkDown编辑软件上一般都会附带一个简单的语法说明，看着写一写，一般10分钟就可以掌握。在OS X上我推荐<a href="http://macdown.uranusjr.com/" target="_blank" rel="external">MacDown</a>，在Windows上哪款编辑器比较好，我也不是很清楚，但是选择很多，随便一款流行的应该都能满足编写博客的需求。</p>
+<h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><h3 id="Node"><a href="#Node" class="headerlink" title="Node"></a>Node</h3><p>开发人员应该对Node比较熟悉了，就算不熟悉或多或少也是听到过的，没听到过的也没关系，到<a href="https://nodejs.org/en/" target="_blank" rel="noopener">Node官网</a>下载最新的版本安装即可。</p>
+<h3 id="Git"><a href="#Git" class="headerlink" title="Git"></a>Git</h3><p>同样要使用hexo需要安装Git，相信大部分也都已经安装了，如果你从来没了解过Git，建议去<a href="https://git-scm.com/" target="_blank" rel="noopener">Git官网</a>下载安装最新版本，同时使用谷歌搜索引擎简单的了解一下Git的使用:]。</p>
+<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h3><p><a href="https://github.com/" target="_blank" rel="noopener">Github</a>是一个非常好的地方，不管是设计狮、攻城狮、产品狗都可以去了解一下，上面有很多值得学习或者阅读的东西。前面说了hexo是可以将静态文件放多很多的平台上的，我们这里就使用比较流行的Github Pages，所以最起码你得有个账号。</p>
+<h3 id="MarkDown-编辑器"><a href="#MarkDown-编辑器" class="headerlink" title="MarkDown 编辑器"></a>MarkDown 编辑器</h3><p>大家知道博客的内容是需要排版的，而HTML不是人人都会的，所以这里我推荐都使用MarkDown语法来书写文章，同时这也会给你带来一些好处，比如我们现在使用的Gitlab还有前面提到的Github，里面所有的issue、comment等等都是使用MarkDown语法的。同时你也不必担心它有多难学，实际上一般使用非常简单，每款MarkDown编辑软件上一般都会附带一个简单的语法说明，看着写一写，一般10分钟就可以掌握。在OS X上我推荐<a href="http://macdown.uranusjr.com/" target="_blank" rel="noopener">MacDown</a>，在Windows上哪款编辑器比较好，我也不是很清楚，但是选择很多，随便一款流行的应该都能满足编写博客的需求。</p>
 <h2 id="hexo的安装以及使用"><a href="#hexo的安装以及使用" class="headerlink" title="hexo的安装以及使用"></a>hexo的安装以及使用</h2><h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure>
+
 <p>其实这里安装完之后还需要用hexo来创建一个博客系统，但是这里我已经把博客创建并且配置好了，所以直接克隆我的项目即可。</p>
 <h3 id="定位到桌面"><a href="#定位到桌面" class="headerlink" title="定位到桌面"></a>定位到桌面</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/Desktop</span><br></pre></td></tr></table></figure>
-<h3 id="克隆soooban"><a href="#克隆soooban" class="headerlink" title="克隆soooban"></a>克隆soooban</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://git.<span class="number">91</span>souban.com/jokefaker/soooban.io.git</span><br></pre></td></tr></table></figure>
+
+<h3 id="克隆soooban"><a href="#克隆soooban" class="headerlink" title="克隆soooban"></a>克隆soooban</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://git.91souban.com/jokefaker/soooban.io.git</span><br></pre></td></tr></table></figure>
+
 <h3 id="定位到soooban"><a href="#定位到soooban" class="headerlink" title="定位到soooban"></a>定位到soooban</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/Desktop/soooban.io</span><br></pre></td></tr></table></figure>
+
 <h3 id="创建新文章"><a href="#创建新文章" class="headerlink" title="创建新文章"></a>创建新文章</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo n <span class="string">"新文章的标题"</span></span><br></pre></td></tr></table></figure>
+
 <h3 id="编辑新文章"><a href="#编辑新文章" class="headerlink" title="编辑新文章"></a>编辑新文章</h3><p>打开soooban/source/_posts，找到里面 新文章的标题.md ，使用MarkDown编辑器打开编辑即可。</p>
 <h3 id="预览"><a href="#预览" class="headerlink" title="预览"></a>预览</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-<p>打开<a href="http://0.0.0.0:4000/就能看到博客跑起来的效果了" target="_blank" rel="external">http://0.0.0.0:4000/就能看到博客跑起来的效果了</a></p>
+
+<p>打开<a href="http://0.0.0.0:4000/就能看到博客跑起来的效果了" target="_blank" rel="noopener">http://0.0.0.0:4000/就能看到博客跑起来的效果了</a></p>
 <h3 id="生成静态文件并部署"><a href="#生成静态文件并部署" class="headerlink" title="生成静态文件并部署"></a>生成静态文件并部署</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
 <p>打开soooban.github.io查看效果</p>
 <h3 id="备注"><a href="#备注" class="headerlink" title="备注"></a>备注</h3><ul>
 <li>文章写完部署之后，需要将产生的变动提交到git上去。</li>
-<li>hexo创建博客以及Github Pages的过程在这里被我略去了，因为可能并不是所有人都感兴趣它是怎么创建的，只要会使用来写文章即可。感兴趣的同学可以看<a href="https://hexo.io/zh-cn/" target="_blank" rel="external">hexo文档</a>和<a href="https://pages.github.com/" target="_blank" rel="external">Github Pages</a></li>
+<li>hexo创建博客以及Github Pages的过程在这里被我略去了，因为可能并不是所有人都感兴趣它是怎么创建的，只要会使用来写文章即可。感兴趣的同学可以看<a href="https://hexo.io/zh-cn/" target="_blank" rel="noopener">hexo文档</a>和<a href="https://pages.github.com/" target="_blank" rel="noopener">Github Pages</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/02/26/Hexo的介绍以及使用/" data-id="cjwqe6jus00006i1d53xj6s6s" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/02/26/Hexo的介绍以及使用/" data-id="cjwr6td8j0000rt1doqvtkva0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
@@ -219,11 +228,11 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
-  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
 
 
-<script src="/js/script.js" type="text/javascript"></script>
+<script src="/js/script.js"></script>
 
   </div>
 </body>

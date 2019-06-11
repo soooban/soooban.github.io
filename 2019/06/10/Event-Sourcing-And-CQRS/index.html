@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head><meta name="generator" content="Hexo 3.8.0">
   <meta charset="utf-8">
   
   <title>Event Sourcing And CQRS | 搜办小组</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="Event Sourcing And CQRSEvent Sourcing 、CQRS 简述Event Soucing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，查">
+<meta name="keywords" content="Event Sourcing,CQRS,Axon">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Event Sourcing And CQRS">
 <meta property="og:url" content="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/index.html">
 <meta property="og:site_name" content="搜办小组">
 <meta property="og:description" content="Event Sourcing And CQRSEvent Sourcing 、CQRS 简述Event Soucing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，查">
+<meta property="og:locale" content="default">
 <meta property="og:updated_time" content="2019-06-10T08:56:53.411Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Event Sourcing And CQRS">
@@ -24,11 +26,11 @@
   
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  <link rel="stylesheet" href="/css/style.css">
   
 
 </head>
-
+</html>
 <body>
   <div id="container">
     <div id="wrap">
@@ -57,7 +59,7 @@
         <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
       </div>
     </div>
   </div>
@@ -98,7 +100,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwqe6jv6000a6i1d5f1tb450" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwr6td8o0001rt1df6dqqbz9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -213,11 +215,11 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
-  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
 
 
-<script src="/js/script.js" type="text/javascript"></script>
+<script src="/js/script.js"></script>
 
   </div>
 </body>

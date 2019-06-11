@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head><meta name="generator" content="Hexo 3.8.0">
   <meta charset="utf-8">
   
   <title>搜办小组</title>
@@ -11,6 +11,7 @@
 <meta property="og:url" content="http://yoursite.com/index.html">
 <meta property="og:site_name" content="搜办小组">
 <meta property="og:description" content="记录小伙伴们的分享">
+<meta property="og:locale" content="default">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="搜办小组">
 <meta name="twitter:description" content="记录小伙伴们的分享">
@@ -23,11 +24,11 @@
   
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  <link rel="stylesheet" href="/css/style.css">
   
 
 </head>
-
+</html>
 <body>
   <div id="container">
     <div id="wrap">
@@ -56,7 +57,7 @@
         <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
       </div>
     </div>
   </div>
@@ -89,208 +90,50 @@
         <h2 id="UID-Generator"><a href="#UID-Generator" class="headerlink" title="UID Generator"></a>UID Generator</h2><h3 id="为什么要使用"><a href="#为什么要使用" class="headerlink" title="为什么要使用"></a>为什么要使用</h3><p>由于 Event Soucing 是记录事件的，那么 Object Id 肯定就不能是用数据库生成的了，基本上所有的 Event Soucing 相关的框架都是将事件直接序列化，然后对应到 Object，所以这种情况下，就需要自己产生 ID，而自己生成 ID 的话，就有很多限制，比如需要根据时间递增，尽量比较短，在分布式的情况下 ID 保证不能重复等等，本文会比较几种方案，然后选择一种比较好的来实现。</p>
 <h3 id="方案选择"><a href="#方案选择" class="headerlink" title="方案选择"></a>方案选择</h3><h4 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h4><p>这种方案其实就是基于数据库的自增 ID，各个分布式系统通过一个数据库去分配 ID，由于依赖了数据库，性能肯定是个问题，如果部署多点数据库，不但实现麻烦，而且性能还是取决于数据库数量，所以在分布式系统当中，并发量大的系统一般不会采取该方案。</p>
 <h4 id="UUID"><a href="#UUID" class="headerlink" title="UUID"></a>UUID</h4><p>UUID是通用唯一识别码 (Universally Unique Identifier)，是由一组 32 位数的 16 进制数字所构成，也就是 128 bit。在规范字符串格式中，UUID 的十六个八位字节被表示为 32个十六进制（基数16）数字，以连字号分隔的五组来显示，形式为 8-4-4-4-12，总共有 36个字符（即三十二个英数字母和四个连字号）。例如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">123e4567-e89b-12d3-a456-426655440000&#10;xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
-<p>N那个位置，只会是8,9,a,b， M那个位置，代表版本号，由于UUID的标准实现有5个版本，所以只会是1,2,3,4,5。不同的版本基于的算法不一样，而在 Java 中最常用的 <figure class="highlight"><figcaption><span>是基于版本 4 的，基于随机数，也会有重复的概率，只是概率特别低，低到几乎可以忽略而已。</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#10;&#30001;&#20110;&#36825;&#31181;&#31639;&#27861;&#29983;&#25104;&#30340; ID &#26159;&#23383;&#31526;&#20018;&#65292;&#32780;&#19988;&#38271;&#24230;&#26377;&#29305;&#21035;&#30340;&#38271;&#65292;&#38750;&#24120;&#19981;&#21033;&#20110;&#24314;&#31435;&#32034;&#24341;&#31561;&#25805;&#20316;&#65292;&#25152;&#20197;&#36890;&#24120;&#19981;&#20250;&#29992;&#26469;&#20316;&#20026;&#20027;&#38190;&#12290;&#10;&#10;#### Snowflake&#10;&#20026;&#20102;&#28385;&#36275;&#22312;&#20998;&#24067;&#24335;&#31995;&#32479;&#20013;&#21487;&#20197;&#29983;&#25104;&#20840;&#23616;&#21807;&#19968;&#19988;&#36235;&#21183;&#36882;&#22686;&#30340; ID&#65292;Twitter &#25512;&#20986;&#20102;&#19968;&#31181;&#31639;&#27861;&#65292;&#35813;&#31639;&#27861;&#30001; 64 bit &#32452;&#25104;&#12290;&#10;&#10;![](https://note.youdao.com/yws/api/personal/file/WEB494d8493f3a2635c4dda26380c3ee06a?method=download&#38;shareKey=ee740e662e59ad62b907200f6c1aac26)&#10;&#10;* &#31532;&#19968;&#20301;&#27704;&#36828;&#26159;0&#65292;&#23454;&#38469;&#19978;&#36825;&#26159;&#20026;&#20102;&#35753;&#29983;&#25104;&#30340; ID &#37117;&#20026;&#27491;&#25968;&#65292;&#20197;&#20445;&#35777;&#36235;&#21183;&#36882;&#22686;&#65307;&#10;* &#21518;&#38754; 41 &#20301;&#29992;&#26469;&#35760;&#24405;&#26102;&#38388;&#65292;&#29702;&#35770;&#19978;&#21487;&#20197;&#35760;&#24405; 2^41 &#27627;&#31186;&#65292;2^41/(24 * 3600 * 365 * 1000) = 69.7 &#24180;&#65292;&#25152;&#20197;&#36825;&#37324;&#30340;&#29702;&#35770;&#26368;&#22823;&#20351;&#29992;&#26102;&#38388;&#23601;&#26159; 70 &#24180;&#24038;&#21491;&#65307;&#10;* &#22312;&#21518;&#38754; 10 &#20301;&#29992;&#26469;&#35760;&#24405;&#26426;&#22120; ID &#65292;&#26356;&#20934;&#30830;&#30340;&#24212;&#35813;&#35828;&#26159;&#23454;&#20363; ID&#65292;&#23545;&#24212;&#30340;&#21487;&#20197;&#26159;&#26576;&#20010; Container &#25110;&#32773;&#26576;&#20010;&#36827;&#31243;&#65292;&#26368;&#22810;&#25903;&#25345; 1024 &#20010;&#65307;&#10;* &#26368;&#21518;12&#20301;&#29992;&#26469;&#35760;&#24405;&#24207;&#21015;&#21495;&#65292;&#26469;&#20445;&#35777;&#27599;&#20010;&#23454;&#20363;&#27599;&#27627;&#31186;&#29983;&#25104;&#30340; ID &#21807;&#19968;&#65307;&#10;&#10;&#35813;&#31639;&#27861;&#30340;&#20248;&#28857;&#65306;&#10;&#10;* &#19981;&#20381;&#36182;&#25968;&#25454;&#24211;&#65292;&#39640;&#24615;&#33021;&#65307;&#10;* &#29983;&#25104;&#30340; ID &#36235;&#21183;&#36882;&#22686;&#65307;&#10;* 64 bit &#30340;&#25968;&#23383;&#20316;&#20026; ID &#30456;&#27604; UUID &#30701;&#30340;&#22810;&#65292;&#26041;&#20415;&#24314;&#31435;&#25968;&#25454;&#24211;&#32034;&#24341;&#12290;&#10;&#10;&#35813;&#31639;&#27861;&#30340;&#32570;&#28857;&#65306;&#10;&#10;* &#20381;&#36182;&#31995;&#32479;&#26102;&#38047;&#65292;&#22914;&#26524;&#31995;&#32479;&#26102;&#38047;&#21457;&#29983;&#22238;&#25320;&#65292;&#37027;&#20040;&#26377;&#21487;&#33021;&#36896;&#25104; ID &#20914;&#31361;&#25110;&#20081;&#24207;&#12290;&#10;&#10;### &#22522;&#20110; Java &#30340;&#23454;&#29616;&#10;&#22522;&#20110;&#19978;&#38754;&#30340;&#20998;&#26512;&#65292;&#36825;&#37324;&#25105;&#20204;&#36873;&#25321;&#20351;&#29992; Snowflake &#26469;&#23454;&#29616;&#65292;Twitter &#23448;&#26041;&#25552;&#20379;&#20102;&#19968;&#20010;[ Scala &#29256;&#26412;&#30340;&#23454;&#29616;](https://github.com/twitter/snowflake/tree/scala_28)&#65292;&#22312;&#36825;&#37324;&#25105;&#20204;&#23454;&#29616;&#19968;&#20010; Java &#29256;&#26412;&#65292;&#20855;&#20307;&#20195;&#30721;&#22914;&#19979;&#65306;</span><br></pre></td></tr></table></figure></p>
-<p>@Slf4j<br>public class SnowFlake {</p>
-<pre><code>private static class TimeBackwardsException extends RuntimeException {
-    public TimeBackwardsException(String message) {
-        super(message);
-    }
-}
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">123e4567-e89b-12d3-a456-426655440000</span><br><span class="line">xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
 
-/**
- * 起始的时间戳
- */
-private static final long START_STAMP = 1262275200000L;
+<p>N那个位置，只会是8,9,a,b， M那个位置，代表版本号，由于UUID的标准实现有5个版本，所以只会是1,2,3,4,5。不同的版本基于的算法不一样，而在 Java 中最常用的 <code>UUID.randomUUID()</code> 是基于版本 4 的，基于随机数，也会有重复的概率，只是概率特别低，低到几乎可以忽略而已。</p>
+<p>由于这种算法生成的 ID 是字符串，而且长度有特别的长，非常不利于建立索引等操作，所以通常不会用来作为主键。</p>
+<h4 id="Snowflake"><a href="#Snowflake" class="headerlink" title="Snowflake"></a>Snowflake</h4><p>为了满足在分布式系统中可以生成全局唯一且趋势递增的 ID，Twitter 推出了一种算法，该算法由 64 bit 组成。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB494d8493f3a2635c4dda26380c3ee06a?method=download&shareKey=ee740e662e59ad62b907200f6c1aac26" alt></p>
+<ul>
+<li>第一位永远是0，实际上这是为了让生成的 ID 都为正数，以保证趋势递增；</li>
+<li>后面 41 位用来记录时间，理论上可以记录 2^41 毫秒，2^41/(24 * 3600 * 365 * 1000) = 69.7 年，所以这里的理论最大使用时间就是 70 年左右；</li>
+<li>在后面 10 位用来记录机器 ID ，更准确的应该说是实例 ID，对应的可以是某个 Container 或者某个进程，最多支持 1024 个；</li>
+<li>最后12位用来记录序列号，来保证每个实例每毫秒生成的 ID 唯一；</li>
+</ul>
+<p>该算法的优点：</p>
+<ul>
+<li>不依赖数据库，高性能；</li>
+<li>生成的 ID 趋势递增；</li>
+<li>64 bit 的数字作为 ID 相比 UUID 短的多，方便建立数据库索引。</li>
+</ul>
+<p>该算法的缺点：</p>
+<ul>
+<li>依赖系统时钟，如果系统时钟发生回拨，那么有可能造成 ID 冲突或乱序。</li>
+</ul>
+<h3 id="基于-Java-的实现"><a href="#基于-Java-的实现" class="headerlink" title="基于 Java 的实现"></a>基于 Java 的实现</h3><p>基于上面的分析，这里我们选择使用 Snowflake 来实现，Twitter 官方提供了一个<a href="https://github.com/twitter/snowflake/tree/scala_28" target="_blank" rel="noopener"> Scala 版本的实现</a>，在这里我们实现一个 Java 版本，具体代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line">@Slf4j</span><br><span class="line">public class SnowFlake &#123;</span><br><span class="line"></span><br><span class="line">    private static class TimeBackwardsException extends RuntimeException &#123;</span><br><span class="line">        public TimeBackwardsException(String message) &#123;</span><br><span class="line">            super(message);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 起始的时间戳</span><br><span class="line">     */</span><br><span class="line">    private static final long START_STAMP = 1262275200000L;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 每一部分占用的位数</span><br><span class="line">     */</span><br><span class="line">    private static final long SEQUENCE_BIT = 12; //序列号占用的位数</span><br><span class="line">    private static final long MACHINE_BIT = 10;   //机器标识占用的位数</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 每一部分的最大值</span><br><span class="line">     */</span><br><span class="line">    private static final long MAX_MACHINE_NUM = -1L ^ (-1L &lt;&lt; MACHINE_BIT);</span><br><span class="line">    private static final long MAX_SEQUENCE = -1L ^ (-1L &lt;&lt; SEQUENCE_BIT);</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 每一部分向左的位移</span><br><span class="line">     */</span><br><span class="line">    private static final long MACHINE_LEFT = SEQUENCE_BIT;</span><br><span class="line">    private static final long TIMESTAMP_LEFT = SEQUENCE_BIT + MACHINE_BIT;</span><br><span class="line"></span><br><span class="line">    private long machineId;     //机器标识</span><br><span class="line">    private long sequence = 0L; //序列号</span><br><span class="line">    private long lastStamp = -1L;//上一次时间戳</span><br><span class="line"></span><br><span class="line">    public SnowFlake(long machineId) &#123;</span><br><span class="line"></span><br><span class="line">        if (machineId &gt; MAX_MACHINE_NUM || machineId &lt; 0) &#123;</span><br><span class="line">            throw new IllegalArgumentException(&quot;machineId can&apos;t be greater than MAX_MACHINE_NUM or less than 0&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        this.machineId = machineId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 产生下一个ID</span><br><span class="line">     */</span><br><span class="line">    public synchronized Long nextId() &#123;</span><br><span class="line">        long currStamp = getNewStamp();</span><br><span class="line">        if (currStamp &lt; lastStamp) &#123;</span><br><span class="line">            throw new TimeBackwardsException(&quot;Clock moved backwards.  Refusing to generate id&quot;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        if (currStamp == lastStamp) &#123;</span><br><span class="line">            sequence = (sequence + 1) &amp; MAX_SEQUENCE;</span><br><span class="line"></span><br><span class="line">            //同一毫秒的序列数已经达到最大</span><br><span class="line">            if (sequence == 0L) &#123;</span><br><span class="line">                sequence = new Random().nextInt(10);</span><br><span class="line">                currStamp = getNextMill();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            // 新的一毫秒，随机从 0-9 中开始</span><br><span class="line">            sequence = new Random().nextInt(10);</span><br><span class="line">        &#125;</span><br><span class="line">        lastStamp = currStamp;</span><br><span class="line"></span><br><span class="line">        return (currStamp - START_STAMP) &lt;&lt; TIMESTAMP_LEFT //时间戳部分</span><br><span class="line">            | machineId &lt;&lt; MACHINE_LEFT             //机器标识部分</span><br><span class="line">            | sequence;                             //序列号部分</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private long getNextMill() &#123;</span><br><span class="line">        long mill = getNewStamp();</span><br><span class="line">        while (mill &lt;= lastStamp) &#123;</span><br><span class="line">            mill = getNewStamp();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        return mill;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private long getNewStamp() &#123;</span><br><span class="line">        return System.currentTimeMillis();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-/**
- * 每一部分占用的位数
- */
-private static final long SEQUENCE_BIT = 12; //序列号占用的位数
-private static final long MACHINE_BIT = 10;   //机器标识占用的位数
+<p>仔细阅读以下这段代码，你会发现有个地方和我们描述的不太一样</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">if (currStamp == lastStamp) &#123;</span><br><span class="line">    sequence = (sequence + 1) &amp; MAX_SEQUENCE;</span><br><span class="line"></span><br><span class="line">    //同一毫秒的序列数已经达到最大</span><br><span class="line">    if (sequence == 0L) &#123;</span><br><span class="line">        sequence = new Random().nextInt(10);</span><br><span class="line">        currStamp = getNextMill();</span><br><span class="line">    &#125;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    // 新的一毫秒，随机从 0-9 中开始</span><br><span class="line">    sequence = new Random().nextInt(10);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-/**
- * 每一部分的最大值
- */
-private static final long MAX_MACHINE_NUM = -1L ^ (-1L &lt;&lt; MACHINE_BIT);
-private static final long MAX_SEQUENCE = -1L ^ (-1L &lt;&lt; SEQUENCE_BIT);
+<p>这里再毫秒刷新的时候，我们并没有去把序列号置为 0，而是随机从 0-9 取了一个数，这么做的原因是在并发量不是特别高的时候，如果都从 0 开始的话，会导致生成的 ID 都是偶数，那么在做一些分表操作的时候，会导致严重的分配不均匀，所以这里我们随机从 0-9 开始让产生的 ID 尽可能的分配均匀。但是这么做是会下降性能的，每毫秒的 ID 生成数量会下降一些，但是这并没有下降数量级，完全是可以接受的。</p>
+<h3 id="基于-Spring-Cloud-分配-Worker-Id"><a href="#基于-Spring-Cloud-分配-Worker-Id" class="headerlink" title="基于 Spring Cloud 分配 Worker Id"></a>基于 Spring Cloud 分配 Worker Id</h3><p>上面介绍了如何使用 Snowflake 来生成 ID，那么结合 Spring Cloud ，我们需要给每个节点分配一个 Worker ID，但是由于 Spring Cloud 的特点，它是希望每个节点无状态化的，这就给我们分配 Worker ID 带来了一定的难度，如果我们需要区分每个几点，就不得不将节点信息存储到某个中央，然后再分配，为了便于之后的水平扩展，这里我们基于内部代码实现，大概的原理是在服务启动的时候，记录下节点 IP 和 MAC ，作为 Service Node Key 存储到数据库，这个 Key 在数据库中唯一，通过这个唯一的 Key 给不同的节点分配 ID。下面我们尝试使用 JPA 来实现这一过程。</p>
+<p><strong>Spring Cloud 在 2.1.0 之后提供了 <code>getInstanceId()</code> 方法，但是可以为空，所以需要看各个具体实现，我看了 K8S 和 consul 都提供了该方法的实现</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line">@Entity</span><br><span class="line">@Getter</span><br><span class="line">@Setter</span><br><span class="line">@NoArgsConstructor</span><br><span class="line">public class WorkerId &#123;</span><br><span class="line"></span><br><span class="line">    @Id</span><br><span class="line">    @GeneratedValue(strategy = GenerationType.AUTO)</span><br><span class="line">    private Long id;</span><br><span class="line"></span><br><span class="line">    @Column(unique = true)</span><br><span class="line">    private String serviceKey;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@Repository</span><br><span class="line">public interface WorkerIdRepository extends JpaRepository&lt;WorkerId, Long&gt; &#123;</span><br><span class="line">    WorkerId findByServiceKey(String serviceKey);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@Service</span><br><span class="line">@AllArgsConstructor</span><br><span class="line">@Slf4j</span><br><span class="line">public class WorkerIdService &#123;</span><br><span class="line"></span><br><span class="line">    private final WorkerIdRepository workerIdRepository;</span><br><span class="line">    private final Registration registration;</span><br><span class="line"></span><br><span class="line">    Long getWorkerId() &#123;</span><br><span class="line"></span><br><span class="line">        String serviceKey = getServiceKey();</span><br><span class="line"></span><br><span class="line">        WorkerId workerId = workerIdRepository.findByServiceKey(serviceKey);</span><br><span class="line"></span><br><span class="line">        if (workerId != null) &#123;</span><br><span class="line">            return workerId.getId() % (SnowFlake.MAX_MACHINE_NUM + 1);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        workerId = new WorkerId();</span><br><span class="line">        // 如果你的 Spring Boot 版本 &gt;= 2.1.0 并且使用的 Discovery 提供了该方法的实现则可以直接使用</span><br><span class="line">        // workerId.setServiceKey(registration.getInstanceId());</span><br><span class="line">        workerId.setServiceKey(serviceKey);</span><br><span class="line">        workerIdRepository.save(workerId);</span><br><span class="line">        return workerId.getId() % (SnowFlake.MAX_MACHINE_NUM + 1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 由于 Spring Cloud Discovery 的 ServiceInstance 接口没有一个获取 instance id 的方法，所以只能想办法自己标记</span><br><span class="line">     * Spring Cloud Discovery 在 2.1.0 之后的版本在接口中提供了 getInstanceId 这一方法，但是可以为空，所以需要各个实现，我看了 K8S 和 consul 都提供了该方法的实现</span><br><span class="line">     * @return ip:mac_address 形式的字符串</span><br><span class="line">     */</span><br><span class="line">    public String getServiceKey() &#123;</span><br><span class="line">        byte[] mac = null;</span><br><span class="line">        String hostAddress = null;</span><br><span class="line">        try &#123;</span><br><span class="line"></span><br><span class="line">            Enumeration&lt;NetworkInterface&gt; networkInterfaces = NetworkInterface.getNetworkInterfaces();</span><br><span class="line">            while (networkInterfaces.hasMoreElements()) &#123;</span><br><span class="line">                NetworkInterface networkInterface = networkInterfaces.nextElement();</span><br><span class="line">                Enumeration&lt;InetAddress&gt; addresses = networkInterface.getInetAddresses();</span><br><span class="line"></span><br><span class="line">                while (addresses.hasMoreElements()) &#123;</span><br><span class="line">                    InetAddress addr = addresses.nextElement();</span><br><span class="line">                    if (addr instanceof Inet4Address &amp;&amp; !addr.isLoopbackAddress() &amp;&amp; (networkInterface.getDisplayName().equals(&quot;en0&quot;) || networkInterface.getDisplayName().equals(&quot;eth0&quot;))) &#123;</span><br><span class="line">                        hostAddress = addr.getHostAddress();</span><br><span class="line">                        mac = networkInterface.getHardwareAddress();</span><br><span class="line">                        break;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                if (mac != null &amp;&amp; StringUtils.isNotBlank(hostAddress)) &#123;</span><br><span class="line">                    break;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            log.error(e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">        if (mac == null || StringUtils.isBlank(hostAddress)) &#123;</span><br><span class="line">            return null;</span><br><span class="line">        &#125;</span><br><span class="line">        // mac地址拼装成String</span><br><span class="line">        StringBuilder macAddress = new StringBuilder();</span><br><span class="line">        for (int i = 0; i &lt; mac.length; i++) &#123;</span><br><span class="line">            if (i != 0) &#123;</span><br><span class="line">                macAddress.append(&quot;-&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">            //mac[i] &amp; 0xFF 是为了把byte转化为正整数</span><br><span class="line">            String s = Integer.toHexString(mac[i] &amp; 0xFF);</span><br><span class="line">            macAddress.append(s.length() == 1 ? 0 + s : s);</span><br><span class="line">        &#125;</span><br><span class="line">        // 把字符串所有小写字母改为大写成为正规的mac地址并返回</span><br><span class="line">        return hostAddress + &quot;:&quot; + macAddress.toString().toUpperCase();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-/**
- * 每一部分向左的位移
- */
-private static final long MACHINE_LEFT = SEQUENCE_BIT;
-private static final long TIMESTAMP_LEFT = SEQUENCE_BIT + MACHINE_BIT;
+<p>建立相应的 Entity、Repository、Service，从代码中可以看到 Worker ID 的实现，获取 IP 和 MAC 作为唯一 Key 存入数据库，获取到自增 ID，然后对 Snowflake 的最大 Worker ID 取余，这样便得到了一个可用的 Worker ID。</p>
+<p>然而这么做会不会有问题？由于Worker ID 在 0-1023 之间反复，如果某些节点反复重启，超过 1024 次并且一些节点一直没有重启，就会出现 Worker ID 重复的情况。由于我们的业务目前节点的更新一般都是逐个依次重启，所以这里暂时不去处理这个问题，未来如果需要多个节点进行 AB 测试，这个时候可能就会出现某些节点频繁更新，而某些节点不变化的情况，届时可能就要重新考虑分配 ID 的方案了。</p>
+<p>下面继续完成上面的方案，我们已经写好了相关的 Service ，剩下的就是在服务启动的时候向数据库写入信息了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class UIDGenerator &#123;</span><br><span class="line"></span><br><span class="line">    private final WorkerIdService workerIdService;</span><br><span class="line">    private SnowFlake flake;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    public UIDGenerator(WorkerIdService workerIdService) &#123;</span><br><span class="line">        this.workerIdService = workerIdService;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Long getId() &#123;</span><br><span class="line">        return flake.nextId();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @PostConstruct</span><br><span class="line">    public void init() &#123;</span><br><span class="line">        this.flake = new SnowFlake(workerIdService.getWorkerId());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-private long machineId;     //机器标识
-private long sequence = 0L; //序列号
-private long lastStamp = -1L;//上一次时间戳
-
-public SnowFlake(long machineId) {
-
-    if (machineId &gt; MAX_MACHINE_NUM || machineId &lt; 0) {
-        throw new IllegalArgumentException(&quot;machineId can&apos;t be greater than MAX_MACHINE_NUM or less than 0&quot;);
-    }
-    this.machineId = machineId;
-}
-
-/**
- * 产生下一个ID
- */
-public synchronized Long nextId() {
-    long currStamp = getNewStamp();
-    if (currStamp &lt; lastStamp) {
-        throw new TimeBackwardsException(&quot;Clock moved backwards.  Refusing to generate id&quot;);
-    }
-
-    if (currStamp == lastStamp) {
-        sequence = (sequence + 1) &amp; MAX_SEQUENCE;
-
-        //同一毫秒的序列数已经达到最大
-        if (sequence == 0L) {
-            sequence = new Random().nextInt(10);
-            currStamp = getNextMill();
-        }
-    } else {
-        // 新的一毫秒，随机从 0-9 中开始
-        sequence = new Random().nextInt(10);
-    }
-    lastStamp = currStamp;
-
-    return (currStamp - START_STAMP) &lt;&lt; TIMESTAMP_LEFT //时间戳部分
-        | machineId &lt;&lt; MACHINE_LEFT             //机器标识部分
-        | sequence;                             //序列号部分
-}
-
-private long getNextMill() {
-    long mill = getNewStamp();
-    while (mill &lt;= lastStamp) {
-        mill = getNewStamp();
-    }
-
-    return mill;
-}
-
-private long getNewStamp() {
-    return System.currentTimeMillis();
-}
-</code></pre><p>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#10;&#20180;&#32454;&#38405;&#35835;&#20197;&#19979;&#36825;&#27573;&#20195;&#30721;&#65292;&#20320;&#20250;&#21457;&#29616;&#26377;&#20010;&#22320;&#26041;&#21644;&#25105;&#20204;&#25551;&#36848;&#30340;&#19981;&#22826;&#19968;&#26679;</span><br></pre></td></tr></table></figure></p>
-<pre><code>if (currStamp == lastStamp) {
-    sequence = (sequence + 1) &amp; MAX_SEQUENCE;
-
-    //同一毫秒的序列数已经达到最大
-    if (sequence == 0L) {
-        sequence = new Random().nextInt(10);
-        currStamp = getNextMill();
-    }
-} else {
-    // 新的一毫秒，随机从 0-9 中开始
-    sequence = new Random().nextInt(10);
-}
-</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#36825;&#37324;&#20877;&#27627;&#31186;&#21047;&#26032;&#30340;&#26102;&#20505;&#65292;&#25105;&#20204;&#24182;&#27809;&#26377;&#21435;&#25226;&#24207;&#21015;&#21495;&#32622;&#20026; 0&#65292;&#32780;&#26159;&#38543;&#26426;&#20174; 0-9 &#21462;&#20102;&#19968;&#20010;&#25968;&#65292;&#36825;&#20040;&#20570;&#30340;&#21407;&#22240;&#26159;&#22312;&#24182;&#21457;&#37327;&#19981;&#26159;&#29305;&#21035;&#39640;&#30340;&#26102;&#20505;&#65292;&#22914;&#26524;&#37117;&#20174; 0 &#24320;&#22987;&#30340;&#35805;&#65292;&#20250;&#23548;&#33268;&#29983;&#25104;&#30340; ID &#37117;&#26159;&#20598;&#25968;&#65292;&#37027;&#20040;&#22312;&#20570;&#19968;&#20123;&#20998;&#34920;&#25805;&#20316;&#30340;&#26102;&#20505;&#65292;&#20250;&#23548;&#33268;&#20005;&#37325;&#30340;&#20998;&#37197;&#19981;&#22343;&#21248;&#65292;&#25152;&#20197;&#36825;&#37324;&#25105;&#20204;&#38543;&#26426;&#20174; 0-9 &#24320;&#22987;&#35753;&#20135;&#29983;&#30340; ID &#23613;&#21487;&#33021;&#30340;&#20998;&#37197;&#22343;&#21248;&#12290;&#20294;&#26159;&#36825;&#20040;&#20570;&#26159;&#20250;&#19979;&#38477;&#24615;&#33021;&#30340;&#65292;&#27599;&#27627;&#31186;&#30340; ID &#29983;&#25104;&#25968;&#37327;&#20250;&#19979;&#38477;&#19968;&#20123;&#65292;&#20294;&#26159;&#36825;&#24182;&#27809;&#26377;&#19979;&#38477;&#25968;&#37327;&#32423;&#65292;&#23436;&#20840;&#26159;&#21487;&#20197;&#25509;&#21463;&#30340;&#12290;&#10;&#10;### &#22522;&#20110; Spring Cloud &#20998;&#37197; Worker Id&#10;&#10;&#19978;&#38754;&#20171;&#32461;&#20102;&#22914;&#20309;&#20351;&#29992; Snowflake &#26469;&#29983;&#25104; ID&#65292;&#37027;&#20040;&#32467;&#21512; Spring Cloud &#65292;&#25105;&#20204;&#38656;&#35201;&#32473;&#27599;&#20010;&#33410;&#28857;&#20998;&#37197;&#19968;&#20010; Worker ID&#65292;&#20294;&#26159;&#30001;&#20110; Spring Cloud &#30340;&#29305;&#28857;&#65292;&#23427;&#26159;&#24076;&#26395;&#27599;&#20010;&#33410;&#28857;&#26080;&#29366;&#24577;&#21270;&#30340;&#65292;&#36825;&#23601;&#32473;&#25105;&#20204;&#20998;&#37197; Worker ID &#24102;&#26469;&#20102;&#19968;&#23450;&#30340;&#38590;&#24230;&#65292;&#22914;&#26524;&#25105;&#20204;&#38656;&#35201;&#21306;&#20998;&#27599;&#20010;&#20960;&#28857;&#65292;&#23601;&#19981;&#24471;&#19981;&#23558;&#33410;&#28857;&#20449;&#24687;&#23384;&#20648;&#21040;&#26576;&#20010;&#20013;&#22830;&#65292;&#28982;&#21518;&#20877;&#20998;&#37197;&#65292;&#20026;&#20102;&#20415;&#20110;&#20043;&#21518;&#30340;&#27700;&#24179;&#25193;&#23637;&#65292;&#36825;&#37324;&#25105;&#20204;&#22522;&#20110;&#20869;&#37096;&#20195;&#30721;&#23454;&#29616;&#65292;&#22823;&#27010;&#30340;&#21407;&#29702;&#26159;&#22312;&#26381;&#21153;&#21551;&#21160;&#30340;&#26102;&#20505;&#65292;&#35760;&#24405;&#19979;&#33410;&#28857; IP &#21644; MAC &#65292;&#20316;&#20026; Service Node Key &#23384;&#20648;&#21040;&#25968;&#25454;&#24211;&#65292;&#36825;&#20010; Key &#22312;&#25968;&#25454;&#24211;&#20013;&#21807;&#19968;&#65292;&#36890;&#36807;&#36825;&#20010;&#21807;&#19968;&#30340; Key &#32473;&#19981;&#21516;&#30340;&#33410;&#28857;&#20998;&#37197; ID&#12290;&#19979;&#38754;&#25105;&#20204;&#23581;&#35797;&#20351;&#29992; JPA &#26469;&#23454;&#29616;&#36825;&#19968;&#36807;&#31243;&#12290;&#10;&#10;**Spring Cloud &#22312; 2.1.0 &#20043;&#21518;&#25552;&#20379;&#20102; ```getInstanceId()``` &#26041;&#27861;&#65292;&#20294;&#26159;&#21487;&#20197;&#20026;&#31354;&#65292;&#25152;&#20197;&#38656;&#35201;&#30475;&#21508;&#20010;&#20855;&#20307;&#23454;&#29616;&#65292;&#25105;&#30475;&#20102; K8S &#21644; consul &#37117;&#25552;&#20379;&#20102;&#35813;&#26041;&#27861;&#30340;&#23454;&#29616;**</span><br></pre></td></tr></table></figure>
-<p>@Entity<br>@Getter<br>@Setter<br>@NoArgsConstructor<br>public class WorkerId {</p>
-<pre><code>@Id
-@GeneratedValue(strategy = GenerationType.AUTO)
-private Long id;
-
-@Column(unique = true)
-private String serviceKey;
-</code></pre><p>}</p>
-<p>@Repository<br>public interface WorkerIdRepository extends JpaRepository<workerid, long=""> {<br>    WorkerId findByServiceKey(String serviceKey);<br>}</workerid,></p>
-<p>@Service<br>@AllArgsConstructor<br>@Slf4j<br>public class WorkerIdService {</p>
-<pre><code>private final WorkerIdRepository workerIdRepository;
-private final Registration registration;
-
-Long getWorkerId() {
-
-    String serviceKey = getServiceKey();
-
-    WorkerId workerId = workerIdRepository.findByServiceKey(serviceKey);
-
-    if (workerId != null) {
-        return workerId.getId() % (SnowFlake.MAX_MACHINE_NUM + 1);
-    }
-
-    workerId = new WorkerId();
-    // 如果你的 Spring Boot 版本 &gt;= 2.1.0 并且使用的 Discovery 提供了该方法的实现则可以直接使用
-    // workerId.setServiceKey(registration.getInstanceId());
-    workerId.setServiceKey(serviceKey);
-    workerIdRepository.save(workerId);
-    return workerId.getId() % (SnowFlake.MAX_MACHINE_NUM + 1);
-}
-
-/**
- * 由于 Spring Cloud Discovery 的 ServiceInstance 接口没有一个获取 instance id 的方法，所以只能想办法自己标记
- * Spring Cloud Discovery 在 2.1.0 之后的版本在接口中提供了 getInstanceId 这一方法，但是可以为空，所以需要各个实现，我看了 K8S 和 consul 都提供了该方法的实现
- * @return ip:mac_address 形式的字符串
- */
-public String getServiceKey() {
-    byte[] mac = null;
-    String hostAddress = null;
-    try {
-
-        Enumeration&lt;NetworkInterface&gt; networkInterfaces = NetworkInterface.getNetworkInterfaces();
-        while (networkInterfaces.hasMoreElements()) {
-            NetworkInterface networkInterface = networkInterfaces.nextElement();
-            Enumeration&lt;InetAddress&gt; addresses = networkInterface.getInetAddresses();
-
-            while (addresses.hasMoreElements()) {
-                InetAddress addr = addresses.nextElement();
-                if (addr instanceof Inet4Address &amp;&amp; !addr.isLoopbackAddress() &amp;&amp; (networkInterface.getDisplayName().equals(&quot;en0&quot;) || networkInterface.getDisplayName().equals(&quot;eth0&quot;))) {
-                    hostAddress = addr.getHostAddress();
-                    mac = networkInterface.getHardwareAddress();
-                    break;
-                }
-            }
-            if (mac != null &amp;&amp; StringUtils.isNotBlank(hostAddress)) {
-                break;
-            }
-        }
-    } catch (Exception e) {
-        log.error(e.getMessage());
-    }
-    if (mac == null || StringUtils.isBlank(hostAddress)) {
-        return null;
-    }
-    // mac地址拼装成String
-    StringBuilder macAddress = new StringBuilder();
-    for (int i = 0; i &lt; mac.length; i++) {
-        if (i != 0) {
-            macAddress.append(&quot;-&quot;);
-        }
-        //mac[i] &amp; 0xFF 是为了把byte转化为正整数
-        String s = Integer.toHexString(mac[i] &amp; 0xFF);
-        macAddress.append(s.length() == 1 ? 0 + s : s);
-    }
-    // 把字符串所有小写字母改为大写成为正规的mac地址并返回
-    return hostAddress + &quot;:&quot; + macAddress.toString().toUpperCase();
-}
-</code></pre><p>}</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#10;&#24314;&#31435;&#30456;&#24212;&#30340; Entity&#12289;Repository&#12289;Service&#65292;&#20174;&#20195;&#30721;&#20013;&#21487;&#20197;&#30475;&#21040; Worker ID &#30340;&#23454;&#29616;&#65292;&#33719;&#21462; IP &#21644; MAC &#20316;&#20026;&#21807;&#19968; Key &#23384;&#20837;&#25968;&#25454;&#24211;&#65292;&#33719;&#21462;&#21040;&#33258;&#22686; ID&#65292;&#28982;&#21518;&#23545; Snowflake &#30340;&#26368;&#22823; Worker ID &#21462;&#20313;&#65292;&#36825;&#26679;&#20415;&#24471;&#21040;&#20102;&#19968;&#20010;&#21487;&#29992;&#30340; Worker ID&#12290;&#10;&#10;&#28982;&#32780;&#36825;&#20040;&#20570;&#20250;&#19981;&#20250;&#26377;&#38382;&#39064;&#65311;&#30001;&#20110;Worker ID &#22312; 0-1023 &#20043;&#38388;&#21453;&#22797;&#65292;&#22914;&#26524;&#26576;&#20123;&#33410;&#28857;&#21453;&#22797;&#37325;&#21551;&#65292;&#36229;&#36807; 1024 &#27425;&#24182;&#19988;&#19968;&#20123;&#33410;&#28857;&#19968;&#30452;&#27809;&#26377;&#37325;&#21551;&#65292;&#23601;&#20250;&#20986;&#29616; Worker ID &#37325;&#22797;&#30340;&#24773;&#20917;&#12290;&#30001;&#20110;&#25105;&#20204;&#30340;&#19994;&#21153;&#30446;&#21069;&#33410;&#28857;&#30340;&#26356;&#26032;&#19968;&#33324;&#37117;&#26159;&#36880;&#20010;&#20381;&#27425;&#37325;&#21551;&#65292;&#25152;&#20197;&#36825;&#37324;&#26242;&#26102;&#19981;&#21435;&#22788;&#29702;&#36825;&#20010;&#38382;&#39064;&#65292;&#26410;&#26469;&#22914;&#26524;&#38656;&#35201;&#22810;&#20010;&#33410;&#28857;&#36827;&#34892; AB &#27979;&#35797;&#65292;&#36825;&#20010;&#26102;&#20505;&#21487;&#33021;&#23601;&#20250;&#20986;&#29616;&#26576;&#20123;&#33410;&#28857;&#39057;&#32321;&#26356;&#26032;&#65292;&#32780;&#26576;&#20123;&#33410;&#28857;&#19981;&#21464;&#21270;&#30340;&#24773;&#20917;&#65292;&#23626;&#26102;&#21487;&#33021;&#23601;&#35201;&#37325;&#26032;&#32771;&#34385;&#20998;&#37197; ID &#30340;&#26041;&#26696;&#20102;&#12290;&#10;&#10;&#19979;&#38754;&#32487;&#32493;&#23436;&#25104;&#19978;&#38754;&#30340;&#26041;&#26696;&#65292;&#25105;&#20204;&#24050;&#32463;&#20889;&#22909;&#20102;&#30456;&#20851;&#30340; Service &#65292;&#21097;&#19979;&#30340;&#23601;&#26159;&#22312;&#26381;&#21153;&#21551;&#21160;&#30340;&#26102;&#20505;&#21521;&#25968;&#25454;&#24211;&#20889;&#20837;&#20449;&#24687;&#20102;&#12290;</span><br></pre></td></tr></table></figure>
-<p>@Component<br>public class UIDGenerator {</p>
-<pre><code>private final WorkerIdService workerIdService;
-private SnowFlake flake;
-
-@Autowired
-public UIDGenerator(WorkerIdService workerIdService) {
-    this.workerIdService = workerIdService;
-}
-
-public Long getId() {
-    return flake.nextId();
-}
-
-@PostConstruct
-public void init() {
-    this.flake = new SnowFlake(workerIdService.getWorkerId());
-}
-</code></pre><p>}</p>
-<p>```</p>
 <p>这里我们建立一个 <code>UIDGenerator</code> 作为服务的 ID 生成器，在启动的时候，通过 <code>WorkerIdService</code> 获取到一个 Worker ID，并构建 <code>Snowfalke</code> 对象，至此我们的 ID 生成器就基本完成了。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/10/UID-Generator/" data-id="cjwqe6jv400036i1d0dxfrwxu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/10/UID-Generator/" data-id="cjwr6td8y000art1dffrc9kd9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -337,7 +180,7 @@ public void init() {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwqe6jv6000a6i1d5f1tb450" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwr6td8o0001rt1df6dqqbz9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -372,30 +215,37 @@ public void init() {
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>hexo是一个基于Node.js的静态博客程序，其编译上百篇文字只需要几秒。hexo生成的静态网页可以直接放到GitHub Pages，BAE，SAE等平台上。基于Github Pages的博客系统还是很流行的，所以我打算将我们以后所有的session全都放到这个平台上面，这样对内有一个记录，以后新人进来可以查阅，对外也有一定的输出，如果以后质量上去了，还是有希望做到有一定的影响力的。关于session大家可以放开了讲，也可以并不完全是技术方面的，只要是分享即可:]。</p>
-<h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><h3 id="Node"><a href="#Node" class="headerlink" title="Node"></a>Node</h3><p>开发人员应该对Node比较熟悉了，就算不熟悉或多或少也是听到过的，没听到过的也没关系，到<a href="https://nodejs.org/en/" target="_blank" rel="external">Node官网</a>下载最新的版本安装即可。</p>
-<h3 id="Git"><a href="#Git" class="headerlink" title="Git"></a>Git</h3><p>同样要使用hexo需要安装Git，相信大部分也都已经安装了，如果你从来没了解过Git，建议去<a href="https://git-scm.com/" target="_blank" rel="external">Git官网</a>下载安装最新版本，同时使用谷歌搜索引擎简单的了解一下Git的使用:]。</p>
-<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h3><p><a href="https://github.com/" target="_blank" rel="external">Github</a>是一个非常好的地方，不管是设计狮、攻城狮、产品狗都可以去了解一下，上面有很多值得学习或者阅读的东西。前面说了hexo是可以将静态文件放多很多的平台上的，我们这里就使用比较流行的Github Pages，所以最起码你得有个账号。</p>
-<h3 id="MarkDown-编辑器"><a href="#MarkDown-编辑器" class="headerlink" title="MarkDown 编辑器"></a>MarkDown 编辑器</h3><p>大家知道博客的内容是需要排版的，而HTML不是人人都会的，所以这里我推荐都使用MarkDown语法来书写文章，同时这也会给你带来一些好处，比如我们现在使用的Gitlab还有前面提到的Github，里面所有的issue、comment等等都是使用MarkDown语法的。同时你也不必担心它有多难学，实际上一般使用非常简单，每款MarkDown编辑软件上一般都会附带一个简单的语法说明，看着写一写，一般10分钟就可以掌握。在OS X上我推荐<a href="http://macdown.uranusjr.com/" target="_blank" rel="external">MacDown</a>，在Windows上哪款编辑器比较好，我也不是很清楚，但是选择很多，随便一款流行的应该都能满足编写博客的需求。</p>
+<h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><h3 id="Node"><a href="#Node" class="headerlink" title="Node"></a>Node</h3><p>开发人员应该对Node比较熟悉了，就算不熟悉或多或少也是听到过的，没听到过的也没关系，到<a href="https://nodejs.org/en/" target="_blank" rel="noopener">Node官网</a>下载最新的版本安装即可。</p>
+<h3 id="Git"><a href="#Git" class="headerlink" title="Git"></a>Git</h3><p>同样要使用hexo需要安装Git，相信大部分也都已经安装了，如果你从来没了解过Git，建议去<a href="https://git-scm.com/" target="_blank" rel="noopener">Git官网</a>下载安装最新版本，同时使用谷歌搜索引擎简单的了解一下Git的使用:]。</p>
+<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h3><p><a href="https://github.com/" target="_blank" rel="noopener">Github</a>是一个非常好的地方，不管是设计狮、攻城狮、产品狗都可以去了解一下，上面有很多值得学习或者阅读的东西。前面说了hexo是可以将静态文件放多很多的平台上的，我们这里就使用比较流行的Github Pages，所以最起码你得有个账号。</p>
+<h3 id="MarkDown-编辑器"><a href="#MarkDown-编辑器" class="headerlink" title="MarkDown 编辑器"></a>MarkDown 编辑器</h3><p>大家知道博客的内容是需要排版的，而HTML不是人人都会的，所以这里我推荐都使用MarkDown语法来书写文章，同时这也会给你带来一些好处，比如我们现在使用的Gitlab还有前面提到的Github，里面所有的issue、comment等等都是使用MarkDown语法的。同时你也不必担心它有多难学，实际上一般使用非常简单，每款MarkDown编辑软件上一般都会附带一个简单的语法说明，看着写一写，一般10分钟就可以掌握。在OS X上我推荐<a href="http://macdown.uranusjr.com/" target="_blank" rel="noopener">MacDown</a>，在Windows上哪款编辑器比较好，我也不是很清楚，但是选择很多，随便一款流行的应该都能满足编写博客的需求。</p>
 <h2 id="hexo的安装以及使用"><a href="#hexo的安装以及使用" class="headerlink" title="hexo的安装以及使用"></a>hexo的安装以及使用</h2><h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure>
+
 <p>其实这里安装完之后还需要用hexo来创建一个博客系统，但是这里我已经把博客创建并且配置好了，所以直接克隆我的项目即可。</p>
 <h3 id="定位到桌面"><a href="#定位到桌面" class="headerlink" title="定位到桌面"></a>定位到桌面</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/Desktop</span><br></pre></td></tr></table></figure>
-<h3 id="克隆soooban"><a href="#克隆soooban" class="headerlink" title="克隆soooban"></a>克隆soooban</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://git.<span class="number">91</span>souban.com/jokefaker/soooban.io.git</span><br></pre></td></tr></table></figure>
+
+<h3 id="克隆soooban"><a href="#克隆soooban" class="headerlink" title="克隆soooban"></a>克隆soooban</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://git.91souban.com/jokefaker/soooban.io.git</span><br></pre></td></tr></table></figure>
+
 <h3 id="定位到soooban"><a href="#定位到soooban" class="headerlink" title="定位到soooban"></a>定位到soooban</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/Desktop/soooban.io</span><br></pre></td></tr></table></figure>
+
 <h3 id="创建新文章"><a href="#创建新文章" class="headerlink" title="创建新文章"></a>创建新文章</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo n <span class="string">"新文章的标题"</span></span><br></pre></td></tr></table></figure>
+
 <h3 id="编辑新文章"><a href="#编辑新文章" class="headerlink" title="编辑新文章"></a>编辑新文章</h3><p>打开soooban/source/_posts，找到里面 新文章的标题.md ，使用MarkDown编辑器打开编辑即可。</p>
 <h3 id="预览"><a href="#预览" class="headerlink" title="预览"></a>预览</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-<p>打开<a href="http://0.0.0.0:4000/就能看到博客跑起来的效果了" target="_blank" rel="external">http://0.0.0.0:4000/就能看到博客跑起来的效果了</a></p>
+
+<p>打开<a href="http://0.0.0.0:4000/就能看到博客跑起来的效果了" target="_blank" rel="noopener">http://0.0.0.0:4000/就能看到博客跑起来的效果了</a></p>
 <h3 id="生成静态文件并部署"><a href="#生成静态文件并部署" class="headerlink" title="生成静态文件并部署"></a>生成静态文件并部署</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
 <p>打开soooban.github.io查看效果</p>
 <h3 id="备注"><a href="#备注" class="headerlink" title="备注"></a>备注</h3><ul>
 <li>文章写完部署之后，需要将产生的变动提交到git上去。</li>
-<li>hexo创建博客以及Github Pages的过程在这里被我略去了，因为可能并不是所有人都感兴趣它是怎么创建的，只要会使用来写文章即可。感兴趣的同学可以看<a href="https://hexo.io/zh-cn/" target="_blank" rel="external">hexo文档</a>和<a href="https://pages.github.com/" target="_blank" rel="external">Github Pages</a></li>
+<li>hexo创建博客以及Github Pages的过程在这里被我略去了，因为可能并不是所有人都感兴趣它是怎么创建的，只要会使用来写文章即可。感兴趣的同学可以看<a href="https://hexo.io/zh-cn/" target="_blank" rel="noopener">hexo文档</a>和<a href="https://pages.github.com/" target="_blank" rel="noopener">Github Pages</a></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/02/26/Hexo的介绍以及使用/" data-id="cjwqe6jus00006i1d53xj6s6s" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/02/26/Hexo的介绍以及使用/" data-id="cjwr6td8j0000rt1doqvtkva0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
@@ -492,11 +342,11 @@ public void init() {
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
-  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
 
 
-<script src="/js/script.js" type="text/javascript"></script>
+<script src="/js/script.js"></script>
 
   </div>
 </body>
