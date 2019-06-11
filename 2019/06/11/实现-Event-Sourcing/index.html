@@ -5,19 +5,19 @@
   
   <title>实现 Event Sourcing | 搜办小组</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSoucing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一些">
-<meta name="keywords" content="Event Sourcing,CQRS,Axon">
+  <meta name="description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSourcing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一">
+<meta name="keywords" content="Event Sourcing,Axon">
 <meta property="og:type" content="article">
 <meta property="og:title" content="实现 Event Sourcing">
 <meta property="og:url" content="http://yoursite.com/2019/06/11/实现-Event-Sourcing/index.html">
 <meta property="og:site_name" content="搜办小组">
-<meta property="og:description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSoucing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一些">
+<meta property="og:description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSourcing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB07deaa43972f6f1bc5c35c18db67884f?method=download&shareKey=afca0c0ceb799824f9cb44104275cb6f">
-<meta property="og:updated_time" content="2019-06-11T03:08:57.380Z">
+<meta property="og:updated_time" content="2019-06-11T14:41:36.819Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="实现 Event Sourcing">
-<meta name="twitter:description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSoucing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一些">
+<meta name="twitter:description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSourcing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一">
 <meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB07deaa43972f6f1bc5c35c18db67884f?method=download&shareKey=afca0c0ceb799824f9cb44104275cb6f">
   
     <link rel="alternate" href="/atom.xml" title="搜办小组" type="application/atom+xml">
@@ -89,7 +89,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="实现-Event-Soucing"><a href="#实现-Event-Soucing" class="headerlink" title="实现 Event Soucing"></a>实现 Event Soucing</h2><p>在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSoucing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。</p>
+        <h2 id="实现-Event-Soucing"><a href="#实现-Event-Soucing" class="headerlink" title="实现 Event Soucing"></a>实现 Event Soucing</h2><p>在了解了相关的基础之后，这里会以最简单的方式实现一个 <code>EventSourcing</code> 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。</p>
 <h3 id="Spring-Boot-工程搭建"><a href="#Spring-Boot-工程搭建" class="headerlink" title="Spring Boot 工程搭建"></a>Spring Boot 工程搭建</h3><p>打开 <a href="http://start.spring.io/" target="_blank" rel="noopener">http://start.spring.io/</a> 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一些之后会用到的服务：</p>
 <p><img src="https://note.youdao.com/yws/api/personal/file/WEB07deaa43972f6f1bc5c35c18db67884f?method=download&shareKey=afca0c0ceb799824f9cb44104275cb6f" alt="image"></p>
 <p>添加配置文件: </p>
@@ -142,16 +142,25 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/11/实现-Event-Sourcing/" data-id="cjwr87vvf000by81dtnk9f9e9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/11/实现-Event-Sourcing/" data-id="cjwrwyk28000b7m1dm3to0osj" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
 
     </footer>
   </div>
   
     
 <nav id="article-nav">
+  
+    <a href="/2019/06/11/实现CQRS/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          实现CQRS
+        
+      </div>
+    </a>
   
   
     <a href="/2019/06/10/UID-Generator/" id="article-nav-older" class="article-nav-link-wrap">
@@ -175,7 +184,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Axon/">Axon</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Axon/">Axon</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UUID/">UUID</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
     </div>
   </div>
 
@@ -185,7 +194,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Axon/" style="font-size: 15px;">Axon</a> <a href="/tags/CQRS/" style="font-size: 20px;">CQRS</a> <a href="/tags/Event-Sourcing/" style="font-size: 20px;">Event Sourcing</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+      <a href="/tags/Axon/" style="font-size: 15px;">Axon</a> <a href="/tags/CQRS/" style="font-size: 15px;">CQRS</a> <a href="/tags/Event-Sourcing/" style="font-size: 20px;">Event Sourcing</a> <a href="/tags/UUID/" style="font-size: 10px;">UUID</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
     </div>
   </div>
 
@@ -205,6 +214,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/06/11/实现CQRS/">实现CQRS</a>
+          </li>
         
           <li>
             <a href="/2019/06/11/实现-Event-Sourcing/">实现 Event Sourcing</a>
