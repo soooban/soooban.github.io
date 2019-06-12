@@ -155,7 +155,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/12/深入使用-Axon/" data-id="cjwsze8ec000djq1duw50vshw" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/12/深入使用-Axon/" data-id="cjwszpsix000dos1ddlsvymmu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -167,9 +167,9 @@
 
 
   
-    <article id="post-实现CQRS" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-实现-CQRS" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/06/11/实现CQRS/" class="article-date">
+    <a href="/2019/06/11/实现-CQRS/" class="article-date">
   <time datetime="2019-06-11T14:39:54.000Z" itemprop="datePublished">2019-06-11</time>
 </a>
     
@@ -181,7 +181,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/11/实现CQRS/">实现CQRS</a>
+      <a class="article-title" href="/2019/06/11/实现-CQRS/">实现 CQRS</a>
     </h1>
   
 
@@ -240,7 +240,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/11/实现CQRS/" data-id="cjwsze8ek000mjq1dgobgky2v" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/11/实现-CQRS/" data-id="cjwszu9v10000qb1dzicbmgvy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -327,7 +327,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/11/实现-Event-Sourcing/" data-id="cjwsze8ea000bjq1d3pyl4e06" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/11/实现-Event-Sourcing/" data-id="cjwszpsiw000bos1dw8zb51af" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -407,7 +407,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/10/UID-Generator/" data-id="cjwsze8e9000ajq1d9ldmpgyx" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/10/UID-Generator/" data-id="cjwszpsiv000aos1dxitiwdkx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/UUID/">UUID</a></li></ul>
@@ -450,11 +450,21 @@
 </ul>
 <p>Event Soucing 通常会和 DDD CQRS 一起讨论，在微服务盛行的前提下，DDD 让整个软件系统松耦合，而 Event Soucing 也是面向 Aggregate，这个模式很符合 DDD 思想，同时由于 Event Soucing 的特性，读取数据必然会成为瓶颈，这个时候 CQRS 就起到做用了，通过读写分离，让各自的职责专一，实际上在传统的方式中我们也可能会这么干，只是方式略微不同，比如有一个只读库，时时同步主库，让查询通过只读库进行，那么如果查询量特别大的时候，起码写库不会因为查询而下降性能。</p>
 <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>由于我们公司的技术体系基本是 Spring 全家桶，而 Java 界似乎 Axon 又是比较流行的 Event Sourcing 框架，本着对新技术的尝试以及某些业务也确实有这方面的需求的出发点，对 Axon 做了一些尝试。后面的一系列文章将会以 Spring Cloud 作为背景，探讨 Axon 如何使用，以及如何出处理一些常见的业务需求（溯源、读写分离、消息可靠等），所以在看后面的文章之前最好对 Spring Boot、Spring Cloud、Spring Cloud Stream、Spring Data JPA 等有一些基本的了解。</p>
+<h3 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h3><ol>
+<li><a href="/2019/06/10/Event-Sourcing-And-CQRS/" title="Event Sourcing And CQRS">Event Sourcing And CQRS</a></li>
+<li><a href="/2019/06/10/UID-Generator/" title="UID Generator">UID Generator</a></li>
+<li><a href="/2019/06/11/实现-Event-Sourcing/" title="实现 Event Sourcing">实现 Event Sourcing</a></li>
+<li><a href="/2019/06/11/实现-CQRS/" title="实现 CQRS">实现 CQRS</a></li>
+<li><a href="/2019/06/12/深入使用-Axon/" title="深入使用 Axon">深入使用 Axon</a></li>
+<li>实现可靠消息</li>
+<li>服务优化</li>
+<li>Spring Cloud Stream 优化</li>
+</ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwsze8dx0001jq1d242tvljl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwszpsig0000os1dm7xuexhc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -519,7 +529,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/02/26/Hexo的介绍以及使用/" data-id="cjwsze8ds0000jq1dm0wzvtla" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/02/26/Hexo的介绍以及使用/" data-id="cjwszpsil0001os1d2immbdtm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
@@ -579,7 +589,7 @@
           </li>
         
           <li>
-            <a href="/2019/06/11/实现CQRS/">实现CQRS</a>
+            <a href="/2019/06/11/实现-CQRS/">实现 CQRS</a>
           </li>
         
           <li>
