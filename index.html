@@ -65,6 +65,78 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-实现可靠消息" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/06/13/实现可靠消息/" class="article-date">
+  <time datetime="2019-06-13T03:15:44.000Z" itemprop="datePublished">2019-06-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/06/13/实现可靠消息/">实现可靠消息</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="实现可靠消息"><a href="#实现可靠消息" class="headerlink" title="实现可靠消息"></a>实现可靠消息</h2><h3 id="什么是可靠消息"><a href="#什么是可靠消息" class="headerlink" title="什么是可靠消息"></a>什么是可靠消息</h3><p>微服务盛行的时代下，消息成为了不可缺少的组件，首先我们看一个例子，contract 系统创建了一个合同，然后发送创建合同的消息。看似简单，实际上分析一下它的出错可能性，会有以下几种：</p>
+<ol>
+<li>创建合同成功，发送消息失败；</li>
+<li>创建合同失败，发送消息成功；</li>
+<li>创建合同成功，发送消息成功；</li>
+<li>创建合同失败，发送消息失败；</li>
+</ol>
+<p>同时成功或者同时失败，这个情况是一致的，是正确的，我们需要关心的就是不一致的情况。那么最简单的办法，就是让创建合同和发送消息成为一个事务，要么一起成功，要么一起失败，但是这么做的话耦合性太强，本身合同创建成功了，却因为消息发送的失败强制回滚。这个时候，可能就想到了存储消息数据，将合同创建和消息数据的存储作为一个事务，消息发送成功之后再去删除消息数据，定期去扫描未发送的消息数据，来保证消息的发送。但是这么做还是有一定的代价的，需要实现消息的存储，消息存储和合同创建还是耦合在一起的，不过这样的模式到 <code>Event Sourcing</code> 下面那就比较理想了，因为本身消息数据和 event 是一样的，存储了 event 相当于完成了存储消息数据，只需要在 event 下做一个标记即可。</p>
+<p>做完了上面这些，就能保证消息一定从 producer 到 broker 这一过程，当然要做到消息不丢，必然产生的结果就是消息可能会重复，情况就是 broker 收到了消息，但是没有通知到 producer，这种情况下 producer 是认为消息没有投递成功的，会出现重复投递的情况。保证了消息一定送达 broker 之后，就是 consumer 和 broker 的关系了，consumer 在消费之后需要告诉 broker 消费成功，否则 broker 需要一直保存这些消息。当然消费端可能需要做更多的事情，比如保证同一 aggregate 事件的顺序消费。下面文章会以在 Axon 框架上做一些拓展，以分别实现 consumer 和 producer。</p>
+<h3 id="拓展-DomainEventEntry"><a href="#拓展-DomainEventEntry" class="headerlink" title="拓展 DomainEventEntry"></a>拓展 DomainEventEntry</h3><p>上面也说到了，在 Event Sourcing 模式下，我们只需要给事件加上一个是否投递的标志，这里我们就看看如何实现（这里只针对 JPA 做了实现）。</p>
+<ol>
+<li>建立对应的 entity 以取代<code>DomainEventEntry</code>：</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Entity</span>(name = <span class="string">"DomainEventEntry"</span>)</span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@Table</span>(indexes = <span class="meta">@Index</span>(columnList = <span class="string">"aggregateIdentifier,sequenceNumber"</span>, unique = <span class="keyword">true</span>))</span><br><span class="line">public class CustomDomainEventEntry extends AbstractSequencedDomainEventEntry&lt;byte[]&gt; &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NotNull</span></span><br><span class="line">    <span class="meta">@Column</span>(columnDefinition = <span class="string">"tinyint(1) default 0"</span>)</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> sent = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CustomDomainEventEntry</span><span class="params">(DomainEventMessage&lt;?&gt; eventMessage, Serializer serializer)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(eventMessage, serializer, <span class="keyword">byte</span>[].class);</span><br><span class="line">        <span class="keyword">this</span>.setSent(<span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Default constructor required by JPA</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">CustomDomainEventEntry</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>建立对应的 storage 以取代 JpaEventStorageEngine：</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomJpaEventStorageEngine</span> <span class="keyword">extends</span> <span class="title">JpaEventStorageEngine</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CustomJpaEventStorageEngine</span><span class="params">(Builder builder)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(builder);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> Object <span class="title">createEventEntity</span><span class="params">(EventMessage&lt;?&gt; eventMessage, Serializer serializer)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> CustomDomainEventEntry(asDomainEventMessage(eventMessage), serializer);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> CustomJpaEventStorageEngine.<span class="function">Builder <span class="title">builder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> CustomJpaEventStorageEngine.Builder();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 此处略去了 builder 部分代码</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Builder</span> <span class="keyword">extends</span> <span class="title">JpaEventStorageEngine</span>.<span class="title">Builder</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>更新对应的 config：</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> EventStorageEngine <span class="title">eventStorageEngine</span><span class="params">(Serializer defaultSerializer,</span></span></span><br><span class="line"><span class="function"><span class="params">                                             PersistenceExceptionResolver persistenceExceptionResolver,</span></span></span><br><span class="line"><span class="function"><span class="params">                                             @Qualifier(<span class="string">"eventSerializer"</span>)</span> Serializer eventSerializer,</span></span><br><span class="line"><span class="function">                                             EntityManagerProvider entityManagerProvider,</span></span><br><span class="line"><span class="function">                                             EventUpcaster contractUpCaster,</span></span><br><span class="line"><span class="function">                                             TransactionManager transactionManager) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> CustomJpaEventStorageEngine.builder()</span><br><span class="line">        .snapshotSerializer(defaultSerializer)</span><br><span class="line">        .upcasterChain(contractUpCaster)</span><br><span class="line">        .persistenceExceptionResolver(persistenceExceptionResolver)</span><br><span class="line">        .eventSerializer(eventSerializer)</span><br><span class="line">        .entityManagerProvider(entityManagerProvider)</span><br><span class="line">        .transactionManager(transactionManager)</span><br><span class="line">        .build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里注意原本的 <code>@RegisterDefaultEntities(packages</code> 就不要了，因为我们用了自己的 entity，启动工程，数据库里的 <code>domain_event_entry</code> 应该会多一个 sent 字段并且都标记为 false 了。</p>
+<h3 id="handler-实现可靠消息的生产端"><a href="#handler-实现可靠消息的生产端" class="headerlink" title="handler 实现可靠消息的生产端"></a>handler 实现可靠消息的生产端</h3><p>做好了准备工作再发送消息就比较清晰了，我们需要做的就是在事件存储后去尝试发送消息，然后标记为已发送即可，在之前的 <code>实现 CQRS</code> 中我们留了一个坑，就是 view 端的更新不是在事件存储之后，这里我们就去实现发消息在事件存储之后，然后 view 层去监听消息更新。具体的实现就是利用 <code>entity postPersist</code> 去监听存储，在 <code>transaction</code> 成功后去尝试发送消息，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">@EntityListeners</span>(CustomDomainEventEntryListener.class)</span><br><span class="line">public class CustomDomainEventEntry extends AbstractSequencedDomainEventEntry&lt;byte[]&gt; &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomDomainEventEntryListener</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> CustomDomainEventEntryRepository customDomainEventEntryRepository;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> ContractPublisher contractPublisher;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(CustomDomainEventEntryRepository customDomainEventEntryRepository, ContractPublisher contractPublisher)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.customDomainEventEntryRepository = customDomainEventEntryRepository;</span><br><span class="line">        <span class="keyword">this</span>.contractPublisher = contractPublisher;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostPersist</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onPersist</span><span class="params">(CustomDomainEventEntry entry)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        TransactionSynchronizationManager.registerSynchronization(<span class="keyword">new</span> TransactionSynchronizationAdapter() &#123;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterCompletion</span><span class="params">(<span class="keyword">int</span> status)</span> </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (status == TransactionSynchronization.STATUS_COMMITTED) &#123;</span><br><span class="line">                    CompletableFuture.runAsync(() -&gt; sendEvent(entry.getEventIdentifier()));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendEvent</span><span class="params">(String identifier)</span> </span>&#123;</span><br><span class="line">        CustomDomainEventEntry eventEntry = customDomainEventEntryRepository.findByEventIdentifier(identifier);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!eventEntry.isSent()) &#123;</span><br><span class="line">            contractPublisher.sendEvent(eventEntry);</span><br><span class="line">            eventEntry.setSent(<span class="keyword">true</span>);</span><br><span class="line">            customDomainEventEntryRepository.save(eventEntry);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Repository</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CustomDomainEventEntryRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">CustomDomainEventEntry</span>, <span class="title">String</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 查找事件</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> identifier</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">CustomDomainEventEntry <span class="title">findByEventIdentifier</span><span class="params">(String identifier)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ContractEventPublisher</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendEvent</span><span class="params">(DomainEvent event)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// use stream to send message here</span></span><br><span class="line">        log.info(MessageFormat.format(<span class="string">"prepare to sending message : &#123;0&#125;]"</span>, <span class="keyword">new</span> Gson().toJson(event)));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendEvent</span><span class="params">(CustomDomainEventEntry event)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// use com.craftsman.eventsourcing.stream to send message here</span></span><br><span class="line">        ObjectMapper mapper = <span class="keyword">new</span> ObjectMapper();</span><br><span class="line"></span><br><span class="line">        HashMap payload = <span class="keyword">null</span>;</span><br><span class="line">        HashMap metaData = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            payload = mapper.readValue(event.getPayload().getData(), HashMap.class);</span><br><span class="line">            metaData = mapper.readValue(event.getMetaData().getData(), HashMap.class);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception exception) &#123;</span><br><span class="line">            log.error(MessageFormat.format(<span class="string">"byte[] to string failed; exception: &#123;0&#125;"</span>, exception));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (payload == <span class="keyword">null</span> || metaData == <span class="keyword">null</span>) &#123;</span><br><span class="line">            log.warn(MessageFormat.format(<span class="string">"nothing to send; exception: &#123;0&#125;"</span>, event.getEventIdentifier()));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        DomainEvent domainEvent = <span class="keyword">new</span> DomainEvent(</span><br><span class="line">            event.getType(),</span><br><span class="line">            event.getAggregateIdentifier(),</span><br><span class="line">            event.getPayload().getType().getName(),</span><br><span class="line">            event.getPayload().getType().getRevision(),</span><br><span class="line">            event.getSequenceNumber(),</span><br><span class="line">            event.getEventIdentifier(),</span><br><span class="line">            event.getTimestamp(),</span><br><span class="line">            payload,</span><br><span class="line">            metaData);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">this</span>.sendEvent(domainEvent);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>DomainEvent</code> 是为了统一消息的格式包装的类，具体可以看代码这里就不贴了</li>
+<li><code>ContractEventPublisher</code> 作为消息统一发送出口，为了不涉及 <code>rabbitmq</code> 暂时以 log 的形式代替消息发送，后续在 <code>Spring Cloud Stream</code> 优化中实现完整的流程</li>
+</ul>
+<h3 id="实现消费端"><a href="#实现消费端" class="headerlink" title="实现消费端"></a>实现消费端</h3><p>从<code>DomainEvent</code>的属性中，我们可以看到有一个<code>sequenceNumber</code>字段，这个字段可以用来保证同一 aggregate 的事件顺序，那么在消费端可以以 type aggregate sequenceNumber 形成一张表，用来记录每个 aggregate 的最新状态，如果 aggregate 数据量比较大，也可以分表存储，yiban aggregate_id 索引之后，单表性能在百万级别，应该都没什么问题。这样在消费的时候先比较<code>sequenceNumber</code>差异，只消费差异值为 1 的事件，就可以保证同一 aggregate 的事件被顺序消费。之后会写篇关于 <code>Spring Cloud Stream</code> 的文章，用来作为服务之间的桥梁，并解决框架用 header 作为路由之后引起的问题，这里暂时不做深入。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/06/13/实现可靠消息/" data-id="cjwu3cxaf000dqk1dkbuekkw4" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-深入使用-Axon" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/06/12/深入使用-Axon/" class="article-date">
@@ -155,7 +227,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/12/深入使用-Axon/" data-id="cjwszpsix000dos1ddlsvymmu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/12/深入使用-Axon/" data-id="cjwu3cxag000fqk1dgh9ohikb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -240,7 +312,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/11/实现-CQRS/" data-id="cjwszu9v10000qb1dzicbmgvy" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/11/实现-CQRS/" data-id="cjwu3cxap000qqk1dckn9xstv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -327,7 +399,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/11/实现-Event-Sourcing/" data-id="cjwszpsiw000bos1dw8zb51af" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/11/实现-Event-Sourcing/" data-id="cjwu3cxad000bqk1d7u83x536" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -407,7 +479,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/10/UID-Generator/" data-id="cjwszpsiv000aos1dxitiwdkx" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/10/UID-Generator/" data-id="cjwu3cxac000aqk1dtby4lvq4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/UUID/">UUID</a></li></ul>
@@ -456,7 +528,7 @@
 <li><a href="/2019/06/11/实现-Event-Sourcing/" title="实现 Event Sourcing">实现 Event Sourcing</a></li>
 <li><a href="/2019/06/11/实现-CQRS/" title="实现 CQRS">实现 CQRS</a></li>
 <li><a href="/2019/06/12/深入使用-Axon/" title="深入使用 Axon">深入使用 Axon</a></li>
-<li>实现可靠消息</li>
+<li><a href="/2019/06/13/实现可靠消息/" title="实现可靠消息">实现可靠消息</a></li>
 <li>服务优化</li>
 <li>Spring Cloud Stream 优化</li>
 </ol>
@@ -464,7 +536,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwszpsig0000os1dm7xuexhc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwu3cx9y0001qk1d9v3hxhh0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -529,7 +601,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/02/26/Hexo的介绍以及使用/" data-id="cjwszpsil0001os1d2immbdtm" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/02/26/Hexo的介绍以及使用/" data-id="cjwu3cx9t0000qk1d04uoed0v" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
@@ -585,6 +657,10 @@
       <ul>
         
           <li>
+            <a href="/2019/06/13/实现可靠消息/">实现可靠消息</a>
+          </li>
+        
+          <li>
             <a href="/2019/06/12/深入使用-Axon/">深入使用 Axon</a>
           </li>
         
@@ -598,10 +674,6 @@
         
           <li>
             <a href="/2019/06/10/UID-Generator/">UID Generator</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/10/Event-Sourcing-And-CQRS/">Event Sourcing And CQRS</a>
           </li>
         
       </ul>
