@@ -5,18 +5,18 @@
   
   <title>Event Sourcing And CQRS | 搜办小组</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Event Sourcing And CQRSEvent Sourcing 、CQRS 简述Event Soucing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，查">
+  <meta name="description" content="Event Sourcing And CQRSEvent Sourcing 、CQRS 简述Event Sourcing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，">
 <meta name="keywords" content="Event Sourcing,CQRS,Axon">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Event Sourcing And CQRS">
 <meta property="og:url" content="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/index.html">
 <meta property="og:site_name" content="搜办小组">
-<meta property="og:description" content="Event Sourcing And CQRSEvent Sourcing 、CQRS 简述Event Soucing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，查">
+<meta property="og:description" content="Event Sourcing And CQRSEvent Sourcing 、CQRS 简述Event Sourcing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-06-13T08:15:56.856Z">
+<meta property="og:updated_time" content="2019-06-13T08:16:38.359Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Event Sourcing And CQRS">
-<meta name="twitter:description" content="Event Sourcing And CQRSEvent Sourcing 、CQRS 简述Event Soucing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，查">
+<meta name="twitter:description" content="Event Sourcing And CQRSEvent Sourcing 、CQRS 简述Event Sourcing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，">
   
     <link rel="alternate" href="/atom.xml" title="搜办小组" type="application/atom+xml">
   
@@ -87,8 +87,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="Event-Sourcing-And-CQRS"><a href="#Event-Sourcing-And-CQRS" class="headerlink" title="Event Sourcing And CQRS"></a>Event Sourcing And CQRS</h2><h3 id="Event-Sourcing-、CQRS-简述"><a href="#Event-Sourcing-、CQRS-简述" class="headerlink" title="Event Sourcing 、CQRS 简述"></a>Event Sourcing 、CQRS 简述</h3><p>Event Soucing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，查询全都走读库，理论上代码层，数据库层，都可以做到分离，当然也可以不分离，一般来说为了保证数据库性能，这里起码会将数据库分离。</p>
-<h3 id="为什么要使用"><a href="#为什么要使用" class="headerlink" title="为什么要使用"></a>为什么要使用</h3><p>了解了 Event Soucing 的基本内容之后，我们可以发现这个模式有很多的好处：</p>
+        <h2 id="Event-Sourcing-And-CQRS"><a href="#Event-Sourcing-And-CQRS" class="headerlink" title="Event Sourcing And CQRS"></a>Event Sourcing And CQRS</h2><h3 id="Event-Sourcing-、CQRS-简述"><a href="#Event-Sourcing-、CQRS-简述" class="headerlink" title="Event Sourcing 、CQRS 简述"></a>Event Sourcing 、CQRS 简述</h3><p>Event Sourcing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，查询全都走读库，理论上代码层，数据库层，都可以做到分离，当然也可以不分离，一般来说为了保证数据库性能，这里起码会将数据库分离。</p>
+<h3 id="为什么要使用"><a href="#为什么要使用" class="headerlink" title="为什么要使用"></a>为什么要使用</h3><p>了解了 Event Sourcing 的基本内容之后，我们可以发现这个模式有很多的好处：</p>
 <ul>
 <li>记录了对象的事件，相当于记录了整个历史，可以查看到任意一个时间点的对象状态；</li>
 <li>都是以事件形式进行写入操作，理论上在高并发的情况下，没有死锁，性能会快很多；</li>
@@ -110,7 +110,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwud1d8n00002o1d14hqsnl0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwue2zlz0001ej1dsmj0vpap" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
