@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="搜办小组">
 <meta property="og:description" content="Event Sourcing And CQRSEvent Sourcing 、CQRS 简述Event Soucing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，查">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-06-13T03:17:31.840Z">
+<meta property="og:updated_time" content="2019-06-13T08:15:56.856Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Event Sourcing And CQRS">
 <meta name="twitter:description" content="Event Sourcing And CQRSEvent Sourcing 、CQRS 简述Event Soucing 简单来说就是记录对象的每个事件而不是记录对象的最新状态，比如新建、修改等，只记录事件内容，当需要最新的状态的时，通过堆叠事件将最新的状态计算出来。那么这种模式查询的时候性能会变的非常差，这个时候就涉及到了 CQRS ，简单的理解就是读写分离，通过事件触发，将最新状态保存到读库，查">
@@ -103,14 +103,14 @@
 <li><a href="/2019/06/11/实现-CQRS/" title="实现 CQRS">实现 CQRS</a></li>
 <li><a href="/2019/06/12/深入使用-Axon/" title="深入使用 Axon">深入使用 Axon</a></li>
 <li><a href="/2019/06/13/实现可靠消息/" title="实现可靠消息">实现可靠消息</a></li>
+<li><a href="/2019/06/13/Spring-Cloud-Stream-优化/" title="Spring Cloud Stream 优化">Spring Cloud Stream 优化</a></li>
 <li>服务优化</li>
-<li>Spring Cloud Stream 优化</li>
 </ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwu3cx9y0001qk1d9v3hxhh0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/10/Event-Sourcing-And-CQRS/" data-id="cjwud1d8n00002o1d14hqsnl0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
@@ -184,6 +184,10 @@
       <ul>
         
           <li>
+            <a href="/2019/06/13/Spring-Cloud-Stream-优化/">Spring Cloud Stream 优化</a>
+          </li>
+        
+          <li>
             <a href="/2019/06/13/实现可靠消息/">实现可靠消息</a>
           </li>
         
@@ -197,10 +201,6 @@
         
           <li>
             <a href="/2019/06/11/实现-Event-Sourcing/">实现 Event Sourcing</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/10/UID-Generator/">UID Generator</a>
           </li>
         
       </ul>

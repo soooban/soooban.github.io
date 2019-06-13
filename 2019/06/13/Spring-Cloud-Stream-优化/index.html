@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Spring Cloud Stream 优化 | 搜办小组</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Spring Cloud Stream 优化有哪些问题Spring Cloud Stream（以下简称 SCS ）是 Spring Cloud 提供的消息中间件的抽象，但是目前也就支持 kafka 和 rabbitmq，这篇文章主要会讨论一下如何让 SCS 更好的服务我们之前搭建的 Event Sourcing、CQRS 模型。以下是我在使用 SCS 的过程中存在的一些问题：  StreamLis">
+<meta name="keywords" content="Event Sourcing,CQRS,Axon">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud Stream 优化">
+<meta property="og:url" content="http://yoursite.com/2019/06/13/Spring-Cloud-Stream-优化/index.html">
+<meta property="og:site_name" content="搜办小组">
+<meta property="og:description" content="Spring Cloud Stream 优化有哪些问题Spring Cloud Stream（以下简称 SCS ）是 Spring Cloud 提供的消息中间件的抽象，但是目前也就支持 kafka 和 rabbitmq，这篇文章主要会讨论一下如何让 SCS 更好的服务我们之前搭建的 Event Sourcing、CQRS 模型。以下是我在使用 SCS 的过程中存在的一些问题：  StreamLis">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB5d505ded890254657931af7006c62da8?method=download&shareKey=6948b87adc9575b58da3795ea3c66f48">
+<meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB2b87c2045666121ecc1ae5bd6a256df9?method=download&shareKey=fc316ec3be7161549db14ce8c1d34c82">
+<meta property="og:updated_time" content="2019-06-13T07:52:09.584Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Cloud Stream 优化">
+<meta name="twitter:description" content="Spring Cloud Stream 优化有哪些问题Spring Cloud Stream（以下简称 SCS ）是 Spring Cloud 提供的消息中间件的抽象，但是目前也就支持 kafka 和 rabbitmq，这篇文章主要会讨论一下如何让 SCS 更好的服务我们之前搭建的 Event Sourcing、CQRS 模型。以下是我在使用 SCS 的过程中存在的一些问题：  StreamLis">
+<meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB5d505ded890254657931af7006c62da8?method=download&shareKey=6948b87adc9575b58da3795ea3c66f48">
+  
+    <link rel="alternate" href="/atom.xml" title="搜办小组" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">搜办小组</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Spring-Cloud-Stream-优化" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/06/13/Spring-Cloud-Stream-优化/" class="article-date">
+  <time datetime="2019-06-13T07:46:21.000Z" itemprop="datePublished">2019-06-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Spring Cloud Stream 优化
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Spring-Cloud-Stream-优化"><a href="#Spring-Cloud-Stream-优化" class="headerlink" title="Spring Cloud Stream 优化"></a>Spring Cloud Stream 优化</h2><h3 id="有哪些问题"><a href="#有哪些问题" class="headerlink" title="有哪些问题"></a>有哪些问题</h3><p><code>Spring Cloud Stream</code>（以下简称 SCS ）是 Spring Cloud 提供的消息中间件的抽象，但是目前也就支持 kafka 和 rabbitmq，这篇文章主要会讨论一下如何让 SCS 更好的服务我们之前搭建的 Event Sourcing、CQRS 模型。以下是我在使用 SCS 的过程中存在的一些问题：</p>
+<ol>
+<li><code>StreamListener</code>用来做事件路由分发并不是很理想，SPEL 可能会写的很长（我尝试过用自定义注解代替原生的注解，从而达到简化的目的，但是会出现一些莫名其妙的事件混乱）。</li>
+<li>如果配合之前的模型使用，我们需要保证消息的顺序消费，每个方法都需要去 check 事件的当前 seq，很不方便。</li>
+<li>在没有 handler 处理某个 type 的事件时，框架会给出一个 warn，然而这个事件可能在 consumer 这里根本不关心。</li>
+</ol>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>为了解决上面的问题，我们可以这么处理，先统一一个入口将 SCS 的消息接收，然后我们自己构建一个路由系统，将请求分发到我们自己定义的注解方法上，并且在这个过程中将 seq 的检查也给做了，大体的流程是这个样子的：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB5d505ded890254657931af7006c62da8?method=download&shareKey=6948b87adc9575b58da3795ea3c66f48" alt="image"></p>
+<p>这样以上几点问题都会得到解决，下面我们来看看具体如何实现：</p>
+<ul>
+<li>首先定义一个注解用于接受自己分发的事件：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">@Target</span>( &#123;ElementType.METHOD&#125;)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> StreamEventHandler &#123;</span><br><span class="line"></span><br><span class="line">    String[] payloadTypes() <span class="keyword">default</span> &#123;<span class="string">""</span>&#125;;</span><br><span class="line"></span><br><span class="line">    String[] types();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>types 对应 Stream 本身 Inuput 的类型， payloadTypes 对应事件类型，比如 <code>ContractCreated</code>，我们要做的效果是这个 payloadTypes 可以不写，直接从方法的第一个参数读取 class 的 simapleName。</p>
+<ul>
+<li>定义用于记录 aggregate sequenceNumber 的 entity 和 repository ：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Entity</span></span><br><span class="line"><span class="meta">@Table</span>(indexes = <span class="meta">@Index</span>(columnList = <span class="string">"aggregateIdentifier,type"</span>, unique = <span class="keyword">true</span>))</span><br><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DomainAggregateSequence</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="meta">@GeneratedValue</span></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Long sequenceNumber;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Long aggregateIdentifier;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String type;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Repository</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">DomainAggregateSequenceRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">DomainAggregateSequence</span>, <span class="title">Long</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据 aggregate id 和 type 找到对应的记录</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> identifier</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> type</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">DomainAggregateSequence <span class="title">findByAggregateIdentifierAndType</span><span class="params">(Long identifier, String type)</span></span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>由于暂时没有找到监听所有已绑定 channel 的事件的方法，这里先简单实现一个抽象类并提供一个 dispatch 的方法用于分发：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StreamDomainEventDispatcher</span> <span class="keyword">implements</span> <span class="title">BeanPostProcessor</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ObjectMapper mapper;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> DomainAggregateSequenceRepository domainAggregateSequenceRepository;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> HashMap&lt;Object, List&lt;Method&gt;&gt; beanHandlerMap = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StreamDomainEventDispatcher</span><span class="params">(ObjectMapper mapper, DomainAggregateSequenceRepository domainAggregateSequenceRepository)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.mapper = mapper;</span><br><span class="line">        <span class="keyword">this</span>.domainAggregateSequenceRepository = domainAggregateSequenceRepository;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">dispatchEvent</span><span class="params">(DomainEvent event, String type)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        log.info(MessageFormat.format(<span class="string">"message [&#123;0&#125;] received"</span>, event.getEventIdentifier()));</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 1. 检查是否是乱序事件或者重复事件</span></span><br><span class="line">        Long aggregateIdentifier = Long.parseLong(event.getAggregateIdentifier());</span><br><span class="line">        String eventType = event.getType();</span><br><span class="line">        Long eventSequence = event.getSequenceNumber();</span><br><span class="line"></span><br><span class="line">        DomainAggregateSequence sequenceObject = domainAggregateSequenceRepository.findByAggregateIdentifierAndType(aggregateIdentifier, eventType);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (sequenceObject == <span class="keyword">null</span>) &#123;</span><br><span class="line">            sequenceObject = <span class="keyword">new</span> DomainAggregateSequence();</span><br><span class="line">            sequenceObject.setSequenceNumber(eventSequence);</span><br><span class="line">            sequenceObject.setAggregateIdentifier(aggregateIdentifier);</span><br><span class="line">            sequenceObject.setType(eventType);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (sequenceObject.getSequenceNumber() + <span class="number">1</span> != eventSequence) &#123;</span><br><span class="line">            <span class="comment">// 重复事件，直接忽略</span></span><br><span class="line">            <span class="keyword">if</span> (sequenceObject.getSequenceNumber().equals(eventSequence)) &#123;</span><br><span class="line">                log.warn(MessageFormat.format(<span class="string">"repeat event ignored, type[&#123;0&#125;] aggregate[&#123;1&#125;] seq[&#123;2&#125;] , ignored"</span>, event.getType(), event.getAggregateIdentifier(), event.getSequenceNumber()));</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> StreamEventSequenceException(MessageFormat.format(<span class="string">"sequence error, db [&#123;0&#125;], current [&#123;1&#125;]"</span>, sequenceObject.getSequenceNumber(), eventSequence));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            sequenceObject.setSequenceNumber(eventSequence);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        domainAggregateSequenceRepository.save(sequenceObject);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2. 分发事件到各个 handler</span></span><br><span class="line">        beanHandlerMap.forEach((key, value) -&gt; &#123;</span><br><span class="line">            Optional&lt;Method&gt; matchedMethod = getMatchedMethods(value, type, event.getPayloadType());</span><br><span class="line"></span><br><span class="line">            matchedMethod.ifPresent(method -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    invoke(key, method, event);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IllegalAccessException | InvocationTargetException e) &#123;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> StreamHandlerException(MessageFormat.format(<span class="string">"[&#123;0&#125;] invoke error"</span>, method.getName()), e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!matchedMethod.isPresent()) &#123;</span><br><span class="line">                log.info(MessageFormat.format(<span class="string">"message [&#123;0&#125;] has no listener"</span>, event.getEventIdentifier()));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        log.info(MessageFormat.format(<span class="string">"message [&#123;0&#125;] handled"</span>, event.getEventIdentifier()));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Optional&lt;Method&gt; <span class="title">getMatchedMethods</span><span class="params">(List&lt;Method&gt; methods, String type, String payloadType)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 这里应该只有一个方法，因为将 stream 的单个事件分成多个之后，无法保证一致性</span></span><br><span class="line">        List&lt;Method&gt; results = methods.stream().filter(m -&gt; &#123;</span><br><span class="line">            StreamEventHandler handler = m.getAnnotation(StreamEventHandler.class);</span><br><span class="line">            List&lt;String&gt; types = <span class="keyword">new</span> ArrayList&lt;&gt;(Arrays.asList(handler.types()));</span><br><span class="line">            List&lt;String&gt; payloadTypes = <span class="keyword">new</span> ArrayList&lt;&gt;(Arrays.asList(handler.payloadTypes()));</span><br><span class="line"></span><br><span class="line">            types.removeIf(StringUtils::isBlank);</span><br><span class="line">            payloadTypes.removeIf(StringUtils::isBlank);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (CollectionUtils.isEmpty(payloadTypes) &amp;&amp; m.getParameterTypes().length != <span class="number">0</span>) &#123;</span><br><span class="line">                payloadTypes = Collections.singletonList(m.getParameterTypes()[<span class="number">0</span>].getSimpleName());</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">boolean</span> isTypeMatch = types.contains(type);</span><br><span class="line"></span><br><span class="line">            String checkedPayloadType = payloadType;</span><br><span class="line">            <span class="keyword">if</span> (StringUtils.contains(checkedPayloadType, <span class="string">"."</span>)) &#123;</span><br><span class="line">                checkedPayloadType = StringUtils.substringAfterLast(checkedPayloadType, <span class="string">"."</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">boolean</span> isPayloadTypeMatch = payloadTypes.contains(checkedPayloadType);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> isTypeMatch &amp;&amp; isPayloadTypeMatch;</span><br><span class="line">        &#125;).collect(Collectors.toList());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (results.size() &gt; <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> StreamHandlerException(MessageFormat.format(<span class="string">"type[&#123;0&#125;] event[&#123;1&#125;] has more than one handler"</span>, type, payloadType));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> results.size() == <span class="number">1</span> ? Optional.of(results.get(<span class="number">0</span>)) : Optional.empty();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">invoke</span><span class="params">(Object bean, Method method, DomainEvent event)</span> <span class="keyword">throws</span> IllegalAccessException, InvocationTargetException </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> count = method.getParameterCount();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (count == <span class="number">0</span>) &#123;</span><br><span class="line">            method.invoke(bean);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (count == <span class="number">1</span>) &#123;</span><br><span class="line">            Class&lt;?&gt; payloadType = method.getParameterTypes()[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (payloadType.equals(DomainEvent.class)) &#123;</span><br><span class="line">                method.invoke(bean, mapper.convertValue(event.getPayload(), DomainEvent.class));</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                method.invoke(bean, mapper.convertValue(event.getPayload(), payloadType));</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (count == <span class="number">2</span>) &#123;</span><br><span class="line">            Class&lt;?&gt; payloadType0 = method.getParameterTypes()[<span class="number">0</span>];</span><br><span class="line">            Class&lt;?&gt; payloadType1 = method.getParameterTypes()[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">            Object firstParameterValue = mapper.convertValue(event.getPayload(), payloadType0);</span><br><span class="line">            Object secondParameterValue = event.getMetaData();</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 如果是 DomainEvent 类型则优先传递该类型，另外一个参数按照 payloadType &gt; metaData 优先级传入</span></span><br><span class="line">            <span class="keyword">if</span> (payloadType0.equals(DomainEvent.class)) &#123;</span><br><span class="line">                firstParameterValue = mapper.convertValue(event, payloadType0);</span><br><span class="line">                secondParameterValue = mapper.convertValue(event.getPayload(), payloadType1);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (payloadType1.equals(DomainEvent.class)) &#123;</span><br><span class="line">                secondParameterValue = mapper.convertValue(event, payloadType1);</span><br><span class="line">            &#125;</span><br><span class="line">            method.invoke(bean, firstParameterValue, secondParameterValue);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">postProcessBeforeInitialization</span><span class="params">(Object bean, String beanName)</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> bean;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">postProcessAfterInitialization</span><span class="params">(Object bean, String beanName)</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">        Class&lt;?&gt; targetClass = AopUtils.isAopProxy(bean) ? AopUtils.getTargetClass(bean) : bean.getClass();</span><br><span class="line">        Method[] uniqueDeclaredMethods = ReflectionUtils.getUniqueDeclaredMethods(targetClass);</span><br><span class="line"></span><br><span class="line">        List&lt;Method&gt; methods = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (Method method : uniqueDeclaredMethods) &#123;</span><br><span class="line">            StreamEventHandler streamListener = AnnotatedElementUtils.findMergedAnnotation(method,</span><br><span class="line">                StreamEventHandler.class);</span><br><span class="line">            <span class="keyword">if</span> (streamListener != <span class="keyword">null</span>) &#123;</span><br><span class="line">                methods.add(method);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!CollectionUtils.isEmpty(methods)) &#123;</span><br><span class="line">            beanHandlerMap.put(bean, methods);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> bean;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里参照了 SCS 本身手机 handler的方式，会将有 <code>@StreamEventHandler</code> 注解的方法都找出来做一个记录。在 dispatchEvent 的时候会更新事件的 seq 并且按照 type 去调用各个标有注解的方法。</p>
+<ul>
+<li>实现一个比较简单的例子：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DomainEventDispatcher</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> StreamDomainEventDispatcher streamDomainEventDispatcher;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@StreamListener</span>(target = ChannelDefinition.CONTRACTS_INPUT, condition = <span class="string">"headers['messageType']=='eventSourcing'"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleBuilding</span><span class="params">(@Payload DomainEvent event)</span> </span>&#123;</span><br><span class="line">        streamDomainEventDispatcher.dispatchEvent(event, ChannelDefinition.CONTRACTS_INPUT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ContractEventHandler</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@StreamEventHandler</span>(types = ChannelDefinition.CONTRACTS_INPUT)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">(ContractCreatedEvent event)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 实现你的 view 层更新业务</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意：</p>
+<ul>
+<li><code>AbstractDomainEventDispatcher</code>中监听所有 bean 加载完成不能用 InitializingBean 接口，否则<code>@Transactional</code>会失效，这个有兴趣的同学可以研究一下<code>@Transactional</code>的机制。</li>
+</ul>
+<p>至此以上几点就优化完了。</p>
+<h3 id="其他优化"><a href="#其他优化" class="headerlink" title="其他优化"></a>其他优化</h3><h4 id="错误处理"><a href="#错误处理" class="headerlink" title="错误处理"></a>错误处理</h4><p>基于 SCS 的默认配置，存在一个致命的问题，那就是当消息处理失败（重试三次）之后，消息直接没了，这个相当于就是消息丢失了。那么解决方案其实也是比较简单的，一般有两种解决方案：</p>
+<ol>
+<li>拒绝这个消息，丢在 broker 原先的队列里。</li>
+<li>将这个消息记录到一个错误的 queue 中等待修复，后续可能将消息转发回去，也可能直接就删除了消息（比如重复的消息）。</li>
+</ol>
+<p>方案 1 这么做可能会出的问题就是，这个消息反复消费，反复失败，引起循环问题从而导致服务出现问题，这个就需要在 broker 做一些策略配置了，为了让 broker 尽可能的简单，我们这里采用方案 2，要实现的流程是这样的：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/WEB2b87c2045666121ecc1ae5bd6a256df9?method=download&shareKey=fc316ec3be7161549db14ce8c1d34c82" alt="image"></p>
+<ul>
+<li>首先让 SCS 为我们自动生成一个 DLQ</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line"><span class="attr">  application:</span></span><br><span class="line"><span class="attr">    name:</span> <span class="string">event-sourcing-service</span></span><br><span class="line"><span class="attr">  datasource:</span></span><br><span class="line"><span class="attr">    url:</span> <span class="attr">jdbc:mysql://localhost:3306/event?useUnicode=true&amp;autoReconnect=true&amp;rewriteBatchedStatements=TRUE</span></span><br><span class="line"><span class="attr">    username:</span> <span class="string">root</span></span><br><span class="line"><span class="attr">    password:</span> <span class="string">root</span></span><br><span class="line"><span class="attr">  jpa:</span></span><br><span class="line"><span class="attr">    hibernate:</span></span><br><span class="line"><span class="attr">      ddl-auto:</span> <span class="string">update</span></span><br><span class="line"><span class="attr">      use-new-id-generator-mappings:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    show-sql:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">    properties:</span></span><br><span class="line">      <span class="string">hibernate.dialect:</span> <span class="string">org.hibernate.dialect.MySQL55Dialect</span></span><br><span class="line"><span class="attr">  rabbitmq:</span></span><br><span class="line"><span class="attr">    host:</span> <span class="string">localhost</span></span><br><span class="line"><span class="attr">    port:</span> <span class="number">5672</span></span><br><span class="line"><span class="attr">    username:</span> <span class="string">creams_user</span></span><br><span class="line"><span class="attr">    password:</span> <span class="string">Souban701</span></span><br><span class="line"><span class="attr">  cloud:</span></span><br><span class="line">    <span class="string">stream.bindings:</span></span><br><span class="line"><span class="attr">      contract-events:</span> <span class="comment"># 这个名字对应代码中@input("value") 的 value</span></span><br><span class="line"><span class="attr">        destination:</span> <span class="string">contract-events</span> <span class="comment"># 这个对应 rabbit 中的 channel</span></span><br><span class="line"><span class="attr">        contentType:</span> <span class="string">application/json</span> <span class="comment"># 这个指定传输类型，其实可以默认指定，但是目前每个地方都写了，所以统一下</span></span><br><span class="line"><span class="attr">      contract-events-input:</span></span><br><span class="line"><span class="attr">        destination:</span> <span class="string">contract-events</span></span><br><span class="line"><span class="attr">        contentType:</span> <span class="string">application/json</span></span><br><span class="line"><span class="attr">        group:</span> <span class="string">event-sourcing-service</span></span><br><span class="line"><span class="attr">        durableSubscription:</span> <span class="literal">true</span></span><br><span class="line">    <span class="string">stream.rabbit.bindings.contract-events-input.consumer:</span></span><br><span class="line"><span class="attr">      autoBindDlq:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">      republishToDlq:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">      deadLetterQueueName:</span> <span class="string">contract-error.dlq</span></span><br><span class="line"><span class="attr">logging:</span></span><br><span class="line">  <span class="string">level.org:</span></span><br><span class="line"><span class="attr">    springframework:</span></span><br><span class="line"><span class="attr">      web:</span> <span class="string">INFO</span></span><br><span class="line">      <span class="string">cloud.sleuth:</span> <span class="string">INFO</span></span><br><span class="line">    <span class="string">apache.ibatis:</span> <span class="string">DEBUG</span></span><br><span class="line">    <span class="string">java.sql:</span> <span class="string">DEBUG</span></span><br><span class="line"><span class="attr">    hibernate:</span></span><br><span class="line"><span class="attr">      SQL:</span> <span class="string">DEBUG</span></span><br><span class="line">      <span class="string">type.descriptor.sql:</span> <span class="string">TRACE</span></span><br><span class="line"></span><br><span class="line"><span class="attr">axon:</span></span><br><span class="line"><span class="attr">  serializer:</span></span><br><span class="line"><span class="attr">    general:</span> <span class="string">jackson</span></span><br></pre></td></tr></table></figure>
+
+<p>加上这个配置之后，rabbit 会给这个队列创建一个 .dlq 后缀的队列，异常消息都会被塞到这个队列里面（消息中包含了异常信息以及来源），等待我们处理，<code>deadLetterQueueName</code>指定了 DLQ 的名称，这样所有的失败消息都会存放到同一个 queue中。大部分的情况下，消息的异常都是由于 consumer 逻辑错误引起的，所以我们需要一个处理这些失败的消息的地方，比如在启动的时候自动拉取 DLQ 中的消息然后转发到原来的 queue 中去远程原有的业务逻辑，如果处理不了那么还是会继续进入到 DLQ 中。</p>
+<ul>
+<li>在启动的时候拉取 DLQ 中的消息转发到原来的 queue 中。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DLXHandler</span> <span class="keyword">implements</span> <span class="title">ApplicationListener</span>&lt;<span class="title">ContextRefreshedEvent</span>&gt;, <span class="title">ApplicationContextAware</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> RabbitTemplate rabbitTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> ApplicationContext applicationContext;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String DLQ = <span class="string">"contract-error.dlq"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DLXHandler</span><span class="params">(RabbitTemplate rabbitTemplate)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.rabbitTemplate = rabbitTemplate;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setApplicationContext</span><span class="params">(ApplicationContext applicationContext)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.applicationContext = applicationContext;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onApplicationEvent</span><span class="params">(ContextRefreshedEvent event)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// SCS 会创建一个 child context ，这里需要判断下正确的 context 初始化完成</span></span><br><span class="line">        <span class="keyword">if</span> (event.getApplicationContext().equals(<span class="keyword">this</span>.applicationContext)) &#123;</span><br><span class="line">            <span class="comment">// 启动后获取 dlq 中所有的消息，进行消费</span></span><br><span class="line">            Message message = rabbitTemplate.receive(DLQ);</span><br><span class="line">            <span class="keyword">while</span> (message != <span class="keyword">null</span>) &#123;</span><br><span class="line">                rabbitTemplate.send(message.getMessageProperties().getReceivedRoutingKey(), message);</span><br><span class="line">                message = rabbitTemplate.receive(DLQ);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于 SCS 没有提供给我们类似的接口，这里使用了 rabbitmq 的接口来获取消息。</p>
+<h3 id="完善之前的-CQRS-例子"><a href="#完善之前的-CQRS-例子" class="headerlink" title="完善之前的 CQRS 例子"></a>完善之前的 CQRS 例子</h3><p>经常上述这些基础操作之后，汇过来实现 CQRS 就比较清晰了，只需要监听相关的事件，然后更新视图层即可。</p>
+<ol>
+<li>添加时间的监听<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@StreamEventHandler</span>(types = ChannelDefinition.CONTRACTS_INPUT)</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">(ContractCreatedEvent event, DomainEvent&lt;ContractCreatedEvent, HashMap&gt; domainEvent)</span> </span>&#123;</span><br><span class="line">    QueryContractCommand command = <span class="keyword">new</span> QueryContractCommand(event.getIdentifier(), domainEvent.getTimestamp());</span><br><span class="line"></span><br><span class="line">    ContractAggregate aggregate = queryGateway.query(command, ContractAggregate.class).join();</span><br><span class="line"></span><br><span class="line">    ContractView view = <span class="keyword">new</span> ContractView();</span><br><span class="line">    view.setIndustryName(aggregate.getIndustryName());</span><br><span class="line">    view.setId(aggregate.getIdentifier());</span><br><span class="line">    view.setPartyB(aggregate.getPartyB());</span><br><span class="line">    view.setPartyA(aggregate.getPartyA());</span><br><span class="line">    view.setName(aggregate.getName());</span><br><span class="line">    view.setDeleted(aggregate.isDeleted());</span><br><span class="line"></span><br><span class="line">    contractViewRepository.save(view);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p><code>StreamDomainEventDispatcher</code> 对传参做了一些处理，当有两个参数的时候会将 <code>DomainEvent</code> 传递，因为有些时候可能会用到一些字段，比如时间、附加信息等等。这里在消费事件的时候，可以根据时间去查询 aggregate 的状态，然后直接做一个映射，也可以根据事件直接对 view 层做 CUD ，个人觉得在性能和速度不存在大问题的时候直接去查询一下 aggregate 当时的状态做一个映射即可，毕竟比较简单。</p>
+<ol start="2">
+<li>删除原来的 <code>ContractViewHandler</code> 即可。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/06/13/Spring-Cloud-Stream-优化/" data-id="cjwud1d9m000r2o1dnk5v898q" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/06/13/实现可靠消息/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">实现可靠消息</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Axon/">Axon</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UUID/">UUID</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Axon/" style="font-size: 15px;">Axon</a> <a href="/tags/CQRS/" style="font-size: 15px;">CQRS</a> <a href="/tags/Event-Sourcing/" style="font-size: 20px;">Event Sourcing</a> <a href="/tags/UUID/" style="font-size: 10px;">UUID</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/06/13/Spring-Cloud-Stream-优化/">Spring Cloud Stream 优化</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/13/实现可靠消息/">实现可靠消息</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/12/深入使用-Axon/">深入使用 Axon</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/11/实现-CQRS/">实现 CQRS</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/11/实现-Event-Sourcing/">实现 Event Sourcing</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Jokefaker<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
