@@ -1,11 +1,85 @@
 <!DOCTYPE html>
-<html>
-<head><meta name="generator" content="Hexo 3.8.0">
-  <meta charset="utf-8">
+
+
+
   
-  <title>实现可靠消息 | 搜办小组</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="实现可靠消息什么是可靠消息微服务盛行的时代下，消息成为了不可缺少的组件，首先我们看一个例子，contract 系统创建了一个合同，然后发送创建合同的消息。看似简单，实际上分析一下它的出错可能性，会有以下几种：  创建合同成功，发送消息失败； 创建合同失败，发送消息成功； 创建合同成功，发送消息成功； 创建合同失败，发送消息失败；  同时成功或者同时失败，这个情况是一致的，是正确的，我们需要关心的就">
+
+
+<html class="theme-next muse use-motion" lang="default">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Event Sourcing,CQRS,Axon,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="实现可靠消息什么是可靠消息微服务盛行的时代下，消息成为了不可缺少的组件，首先我们看一个例子，contract 系统创建了一个合同，然后发送创建合同的消息。看似简单，实际上分析一下它的出错可能性，会有以下几种：  创建合同成功，发送消息失败； 创建合同失败，发送消息成功； 创建合同成功，发送消息成功； 创建合同失败，发送消息失败；  同时成功或者同时失败，这个情况是一致的，是正确的，我们需要关心的就">
 <meta name="keywords" content="Event Sourcing,CQRS,Axon">
 <meta property="og:type" content="article">
 <meta property="og:title" content="实现可靠消息">
@@ -13,79 +87,270 @@
 <meta property="og:site_name" content="搜办小组">
 <meta property="og:description" content="实现可靠消息什么是可靠消息微服务盛行的时代下，消息成为了不可缺少的组件，首先我们看一个例子，contract 系统创建了一个合同，然后发送创建合同的消息。看似简单，实际上分析一下它的出错可能性，会有以下几种：  创建合同成功，发送消息失败； 创建合同失败，发送消息成功； 创建合同成功，发送消息成功； 创建合同失败，发送消息失败；  同时成功或者同时失败，这个情况是一致的，是正确的，我们需要关心的就">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-06-13T08:10:23.998Z">
+<meta property="og:updated_time" content="2019-06-13T09:01:58.458Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="实现可靠消息">
 <meta name="twitter:description" content="实现可靠消息什么是可靠消息微服务盛行的时代下，消息成为了不可缺少的组件，首先我们看一个例子，contract 系统创建了一个合同，然后发送创建合同的消息。看似简单，实际上分析一下它的出错可能性，会有以下几种：  创建合同成功，发送消息失败； 创建合同失败，发送消息成功； 创建合同成功，发送消息成功； 创建合同失败，发送消息失败；  同时成功或者同时失败，这个情况是一致的，是正确的，我们需要关心的就">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/06/13/实现可靠消息/">
+
+
+
+
+
+  <title>实现可靠消息 | 搜办小组</title>
   
-    <link rel="alternate" href="/atom.xml" title="搜办小组" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  <link rel="stylesheet" href="/css/style.css">
-  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?84bc6b961e8c1f650a2a18550231c6c9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
 
 </head>
-</html>
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">搜办小组</a>
-      </h1>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
-      </div>
-    </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-实现可靠消息" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/13/实现可靠消息/" class="article-date">
-  <time datetime="2019-06-13T03:15:44.000Z" itemprop="datePublished">2019-06-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
   
-    <h1 class="article-title" itemprop="name">
-      实现可靠消息
-    </h1>
+  
+    
   
 
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">搜办小组</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/13/实现可靠消息/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Jokefaker">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="搜办小组">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">实现可靠消息</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-06-13T11:15:44+08:00">
+                2019-06-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/后端/" itemprop="url" rel="index">
+                    <span itemprop="name">后端</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
       </header>
     
-    <div class="article-entry" itemprop="articleBody">
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
       
         <h2 id="实现可靠消息"><a href="#实现可靠消息" class="headerlink" title="实现可靠消息"></a>实现可靠消息</h2><h3 id="什么是可靠消息"><a href="#什么是可靠消息" class="headerlink" title="什么是可靠消息"></a>什么是可靠消息</h3><p>微服务盛行的时代下，消息成为了不可缺少的组件，首先我们看一个例子，contract 系统创建了一个合同，然后发送创建合同的消息。看似简单，实际上分析一下它的出错可能性，会有以下几种：</p>
 <ol>
@@ -96,6 +361,8 @@
 </ol>
 <p>同时成功或者同时失败，这个情况是一致的，是正确的，我们需要关心的就是不一致的情况。那么最简单的办法，就是让创建合同和发送消息成为一个事务，要么一起成功，要么一起失败，但是这么做的话耦合性太强，本身合同创建成功了，却因为消息发送的失败强制回滚。这个时候，可能就想到了存储消息数据，将合同创建和消息数据的存储作为一个事务，消息发送成功之后再去删除消息数据，定期去扫描未发送的消息数据，来保证消息的发送。但是这么做还是有一定的代价的，需要实现消息的存储，消息存储和合同创建还是耦合在一起的，不过这样的模式到 <code>Event Sourcing</code> 下面那就比较理想了，因为本身消息数据和 event 是一样的，存储了 event 相当于完成了存储消息数据，只需要在 event 下做一个标记即可。</p>
 <p>做完了上面这些，就能保证消息一定从 producer 到 broker 这一过程，当然要做到消息不丢，必然产生的结果就是消息可能会重复，情况就是 broker 收到了消息，但是没有通知到 producer，这种情况下 producer 是认为消息没有投递成功的，会出现重复投递的情况。保证了消息一定送达 broker 之后，就是 consumer 和 broker 的关系了，consumer 在消费之后需要告诉 broker 消费成功，否则 broker 需要一直保存这些消息。当然消费端可能需要做更多的事情，比如保证同一 aggregate 事件的顺序消费。下面文章会以在 Axon 框架上做一些拓展，以分别实现 consumer 和 producer。</p>
+<a id="more"></a>
+
 <h3 id="拓展-DomainEventEntry"><a href="#拓展-DomainEventEntry" class="headerlink" title="拓展 DomainEventEntry"></a>拓展 DomainEventEntry</h3><p>上面也说到了，在 Event Sourcing 模式下，我们只需要给事件加上一个是否投递的标志，这里我们就看看如何实现（这里只针对 JPA 做了实现）。</p>
 <ol>
 <li>建立对应的 entity 以取代<code>DomainEventEntry</code>：</li>
@@ -119,140 +386,389 @@
 <li><code>DomainEvent</code> 是为了统一消息的格式包装的类，具体可以看代码这里就不贴了</li>
 <li><code>ContractEventPublisher</code> 作为消息统一发送出口，为了不涉及 <code>rabbitmq</code> 暂时以 log 的形式代替消息发送，后续在 <code>Spring Cloud Stream</code> 优化中实现完整的流程</li>
 </ul>
-<h3 id="实现消费端"><a href="#实现消费端" class="headerlink" title="实现消费端"></a>实现消费端</h3><p>从<code>DomainEvent</code>的属性中，我们可以看到有一个<code>sequenceNumber</code>字段，这个字段可以用来保证同一 aggregate 的事件顺序，那么在消费端可以以 type aggregate sequenceNumber 形成一张表，用来记录每个 aggregate 的最新状态，如果 aggregate 数据量比较大，也可以分表存储，yiban aggregate_id 索引之后，单表性能在百万级别，应该都没什么问题。这样在消费的时候先比较<code>sequenceNumber</code>差异，只消费差异值为 1 的事件，就可以保证同一 aggregate 的事件被顺序消费。之后会写篇关于 <code>Spring Cloud Stream</code> 的文章，用来作为服务之间的桥梁，并解决框架用 header 作为路由之后引起的问题，这里暂时不做深入。</p>
+<h3 id="实现消费端"><a href="#实现消费端" class="headerlink" title="实现消费端"></a>实现消费端</h3><p>从<code>DomainEvent</code>的属性中，我们可以看到有一个<code>sequenceNumber</code>字段，这个字段可以用来保证同一 aggregate 的事件顺序，那么在消费端可以以 type aggregate sequenceNumber 形成一张表，用来记录每个 aggregate 的最新状态，如果 aggregate 数据量比较大，也可以分表存储，一般 <code>aggregate_id</code> 索引之后，单表性能在百万级别，应该都没什么问题。这样在消费的时候先比较 <code>sequenceNumber</code> 差异，只消费差异值为 1 的事件，就可以保证同一 aggregate 的事件被顺序消费。之后会写篇关于 <code>Spring Cloud Stream</code> 的文章，用来作为服务之间的桥梁，并解决框架用 header 作为路由之后引起的问题，这里暂时不做深入。</p>
 
       
     </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/13/实现可靠消息/" data-id="cjwue2zmb000dej1dg6ndb6kg" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Axon/">Axon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li></ul>
+    
+    
+    
 
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Event-Sourcing/" rel="tag"># Event Sourcing</a>
+          
+            <a href="/tags/CQRS/" rel="tag"># CQRS</a>
+          
+            <a href="/tags/Axon/" rel="tag"># Axon</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/12/深入使用-Axon/" rel="next" title="深入使用 Axon">
+                <i class="fa fa-chevron-left"></i> 深入使用 Axon
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/06/13/Spring-Cloud-Stream-优化/" rel="prev" title="Spring Cloud Stream 优化">
+                Spring Cloud Stream 优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
     </footer>
   </div>
   
-    
-<nav id="article-nav">
   
-    <a href="/2019/06/13/Spring-Cloud-Stream-优化/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
         
-          Spring Cloud Stream 优化
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Jokefaker</p>
+              <p class="site-description motion-element" itemprop="description">记录小伙伴们的分享</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#实现可靠消息"><span class="nav-number">1.</span> <span class="nav-text">实现可靠消息</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是可靠消息"><span class="nav-number">1.1.</span> <span class="nav-text">什么是可靠消息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#拓展-DomainEventEntry"><span class="nav-number">1.2.</span> <span class="nav-text">拓展 DomainEventEntry</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#handler-实现可靠消息的生产端"><span class="nav-number">1.3.</span> <span class="nav-text">handler 实现可靠消息的生产端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现消费端"><span class="nav-number">1.4.</span> <span class="nav-text">实现消费端</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
         
       </div>
-    </a>
-  
-  
-    <a href="/2019/06/12/深入使用-Axon/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">深入使用 Axon</div>
-    </a>
-  
-</nav>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jokefaker</span>
 
   
-</article>
+</div>
 
-</section>
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
         
-          <aside id="sidebar">
-  
-    
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Axon/">Axon</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CQRS/">CQRS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Event-Sourcing/">Event Sourcing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/UUID/">UUID</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
-    </div>
-  </div>
 
 
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/Axon/" style="font-size: 15px;">Axon</a> <a href="/tags/CQRS/" style="font-size: 15px;">CQRS</a> <a href="/tags/Event-Sourcing/" style="font-size: 20px;">Event Sourcing</a> <a href="/tags/UUID/" style="font-size: 10px;">UUID</a> <a href="/tags/hexo/" style="font-size: 10px;">hexo</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a></li></ul>
-    </div>
-  </div>
 
 
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2019/06/13/Spring-Cloud-Stream-优化/">Spring Cloud Stream 优化</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/13/实现可靠消息/">实现可靠消息</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/12/深入使用-Axon/">深入使用 Axon</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/11/实现-CQRS/">实现 CQRS</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/11/实现-Event-Sourcing/">实现 Event Sourcing</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
 
-  
-</aside>
+
+
         
       </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2019 Jokefaker<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
-</footer>
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
     
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-
-
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
-
-
-<script src="/js/script.js"></script>
+    
 
   </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
 </body>
 </html>
