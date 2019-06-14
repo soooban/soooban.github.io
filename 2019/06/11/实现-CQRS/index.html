@@ -106,7 +106,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB51805c3fd6414e0932ffcf2dce1e0355?method=download&shareKey=ff7c8db748a6ab8619a3dc93021b216f">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB8472cb33ea86f97b4789dcaffc35cbf8?method=download&shareKey=0add308c7d8fd4abe01a4c4598b25eea">
-<meta property="og:updated_time" content="2019-06-14T01:54:09.230Z">
+<meta property="og:updated_time" content="2019-06-14T06:09:30.698Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="实现 CQRS">
 <meta name="twitter:description" content="实现 CQRS在实现了 EventSoucing 之后，亟待解决的问题是查询了，理论上同一 Service 可以做到多数据源，甚至多数据库，这篇文章就暂时以同一个数据库为例子，同样使用 JPA 去做 view 的 ORM。 建立 entity第一步当然是建立对应的 Entity 和对应的 Repository 了： 12345678910111213141516171819202122232425">
@@ -387,7 +387,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-06-14 09:54:09" itemprop="dateModified" datetime="2019-06-14T09:54:09+08:00">2019-06-14</time>
+                <time title="Modified: 2019-06-14 14:09:30" itemprop="dateModified" datetime="2019-06-14T14:09:30+08:00">2019-06-14</time>
               
             
           </span>
@@ -511,6 +511,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> QueryGateway queryGateway;</span><br><span class="line"></span><br><span class="line"><span class="meta">@GetMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> ContractAggregate <span class="title">getContract</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Long id) </span>&#123;</span><br><span class="line">    QueryContractCommand command = <span class="keyword">new</span> QueryContractCommand(id, Instant.now());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> queryGateway.query(command, ContractAggregate.class).join();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>到这里 CQRS + EventSoucing 的模型就做完了。</p>
+<p><a href="https://github.com/soooban/AxonDemo" target="_blank" rel="noopener">完整的例子 - branch session3</a></p>
 
       
     </div>

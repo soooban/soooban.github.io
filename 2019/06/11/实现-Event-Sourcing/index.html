@@ -105,7 +105,7 @@
 <meta property="og:description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSourcing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB07deaa43972f6f1bc5c35c18db67884f?method=download&shareKey=afca0c0ceb799824f9cb44104275cb6f">
-<meta property="og:updated_time" content="2019-06-14T01:54:09.224Z">
+<meta property="og:updated_time" content="2019-06-14T06:09:30.687Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="实现 Event Sourcing">
 <meta name="twitter:description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSourcing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一">
@@ -386,7 +386,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-06-14 09:54:09" itemprop="dateModified" datetime="2019-06-14T09:54:09+08:00">2019-06-14</time>
+                <time title="Modified: 2019-06-14 14:09:30" itemprop="dateModified" datetime="2019-06-14T14:09:30+08:00">2019-06-14</time>
               
             
           </span>
@@ -512,6 +512,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/contracts"</span>)</span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ContractController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> CommandGateway commandGateway;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostMapping</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">createContract</span><span class="params">(@RequestBody @Valid CreateContractCommand command)</span> </span>&#123;</span><br><span class="line">        commandGateway.send(command);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PutMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateContract</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Long id, @RequestBody @Valid UpdateContractCommand command) </span>&#123;</span><br><span class="line">        command.setIdentifier(id);</span><br><span class="line">        commandGateway.send(command);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@DeleteMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">deleteContract</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Long id) </span>&#123;</span><br><span class="line">        commandGateway.send(<span class="keyword">new</span> DeleteContractCommand(id));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>启动工程并顺序执行 POST UPDATE DELETE 操作，你会发现<code>domain_event_entry</code>中多了三条记录，这张表就是用来记录事件的，可以看到这里详细的记录了每个事件的发生时间、内容、附加信息、类型等信息。至此本次 Event Soucing 的例子就结束了，主要将传统的增删改操作改造成了事件记录的形式。下次将会从 CQRS 的角度实现数据的读取。</p>
+<p><a href="https://github.com/soooban/AxonDemo" target="_blank" rel="noopener">完整的例子 - branch session4</a></p>
 
       
     </div>

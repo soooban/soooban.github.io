@@ -105,7 +105,7 @@
 <meta property="og:description" content="UID Generator为什么要使用由于 Event Soucing 是记录事件的，那么 Object Id 肯定就不能是用数据库生成的了，基本上所有的 Event Soucing 相关的框架都是将事件直接序列化，然后对应到 Object，所以这种情况下，就需要自己产生 ID，而自己生成 ID 的话，就有很多限制，比如需要根据时间递增，尽量比较短，在分布式的情况下 ID 保证不能重复等等，本文会">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB494d8493f3a2635c4dda26380c3ee06a?method=download&shareKey=ee740e662e59ad62b907200f6c1aac26">
-<meta property="og:updated_time" content="2019-06-14T01:54:09.213Z">
+<meta property="og:updated_time" content="2019-06-14T06:09:30.660Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="UID Generator">
 <meta name="twitter:description" content="UID Generator为什么要使用由于 Event Soucing 是记录事件的，那么 Object Id 肯定就不能是用数据库生成的了，基本上所有的 Event Soucing 相关的框架都是将事件直接序列化，然后对应到 Object，所以这种情况下，就需要自己产生 ID，而自己生成 ID 的话，就有很多限制，比如需要根据时间递增，尽量比较短，在分布式的情况下 ID 保证不能重复等等，本文会">
@@ -386,7 +386,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-06-14 09:54:09" itemprop="dateModified" datetime="2019-06-14T09:54:09+08:00">2019-06-14</time>
+                <time title="Modified: 2019-06-14 14:09:30" itemprop="dateModified" datetime="2019-06-14T14:09:30+08:00">2019-06-14</time>
               
             
           </span>
@@ -505,6 +505,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UIDGenerator</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> WorkerIdService workerIdService;</span><br><span class="line">    <span class="keyword">private</span> SnowFlake flake;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">UIDGenerator</span><span class="params">(WorkerIdService workerIdService)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.workerIdService = workerIdService;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Long <span class="title">getId</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> flake.nextId();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.flake = <span class="keyword">new</span> SnowFlake(workerIdService.getWorkerId());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>这里我们建立一个 <code>UIDGenerator</code> 作为服务的 ID 生成器，在启动的时候，通过 <code>WorkerIdService</code> 获取到一个 Worker ID，并构建 <code>Snowfalke</code> 对象，至此我们的 ID 生成器就基本完成了。</p>
+<p><a href="https://github.com/soooban/AxonDemo" target="_blank" rel="noopener">完整的例子 - branch session2</a></p>
 
       
     </div>

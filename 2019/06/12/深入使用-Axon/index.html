@@ -104,7 +104,7 @@
 <meta property="og:site_name" content="搜办小组">
 <meta property="og:description" content="深入使用 Axon实现 snapshot在前面文章中，我们略微涉及了一些 snapshot 的概念，其实这个概念还是比较好理解的，当事件堆积到一定的程度，每次 load 都会花费一定的时间，这个时候自然会想到 snapshot，先将一部分事件进行计算，然后生成一个 snapshot，后续 load 的时候先读取 snapshot，这样就省去了很多计算过程。如果你读过之前改写 event store">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-06-14T01:54:09.222Z">
+<meta property="og:updated_time" content="2019-06-14T06:09:30.683Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入使用 Axon">
 <meta name="twitter:description" content="深入使用 Axon实现 snapshot在前面文章中，我们略微涉及了一些 snapshot 的概念，其实这个概念还是比较好理解的，当事件堆积到一定的程度，每次 load 都会花费一定的时间，这个时候自然会想到 snapshot，先将一部分事件进行计算，然后生成一个 snapshot，后续 load 的时候先读取 snapshot，这样就省去了很多计算过程。如果你读过之前改写 event store">
@@ -384,7 +384,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-06-14 09:54:09" itemprop="dateModified" datetime="2019-06-14T09:54:09+08:00">2019-06-14</time>
+                <time title="Modified: 2019-06-14 14:09:30" itemprop="dateModified" datetime="2019-06-14T14:09:30+08:00">2019-06-14</time>
               
             
           </span>
@@ -524,6 +524,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ContractCommandGateway contractCommandGateway;</span><br><span class="line"></span><br><span class="line"><span class="meta">@PostMapping</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Long <span class="title">createContract</span><span class="params">(@RequestBody @Valid CreateContractCommand command)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> contractCommandGateway.sendCommandAndWaitForAResult(command);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@PutMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateContract</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Long id, @RequestBody @Valid UpdateContractCommand command) </span>&#123;</span><br><span class="line">    command.setIdentifier(id);</span><br><span class="line">    contractCommandGateway.sendCommandAndWait(command);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@DeleteMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">deleteContract</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Long id) </span>&#123;</span><br><span class="line">    contractCommandGateway.sendCommandAndWait(<span class="keyword">new</span> DeleteContractCommand(id));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>这里大家可能注意到，我将原来 async 的发送都改成了 sync 的，因为 async 的调用，如果过程异常，其实这个请求并不会丢出异常，<code>sendCommandAndWaitForAResult</code> command 可以有返回值，这个在<a href="https://docs.axonframework.org/part-ii-domain-logic/command-model#returning-results-from-command-handlers" target="_blank" rel="noopener">官方文档</a>中也有介绍，就不做过多的介绍。</p>
+<p><a href="https://github.com/soooban/AxonDemo" target="_blank" rel="noopener">完整的例子 - branch session5</a></p>
 
       
     </div>

@@ -104,7 +104,7 @@
 <meta property="og:site_name" content="搜办小组">
 <meta property="og:description" content="实现可靠消息什么是可靠消息微服务盛行的时代下，消息成为了不可缺少的组件，首先我们看一个例子，contract 系统创建了一个合同，然后发送创建合同的消息。看似简单，实际上分析一下它的出错可能性，会有以下几种：  创建合同成功，发送消息失败； 创建合同失败，发送消息成功； 创建合同成功，发送消息成功； 创建合同失败，发送消息失败；  同时成功或者同时失败，这个情况是一致的，是正确的，我们需要关心的就">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-06-13T09:01:58.458Z">
+<meta property="og:updated_time" content="2019-06-14T06:09:30.673Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="实现可靠消息">
 <meta name="twitter:description" content="实现可靠消息什么是可靠消息微服务盛行的时代下，消息成为了不可缺少的组件，首先我们看一个例子，contract 系统创建了一个合同，然后发送创建合同的消息。看似简单，实际上分析一下它的出错可能性，会有以下几种：  创建合同成功，发送消息失败； 创建合同失败，发送消息成功； 创建合同成功，发送消息成功； 创建合同失败，发送消息失败；  同时成功或者同时失败，这个情况是一致的，是正确的，我们需要关心的就">
@@ -367,12 +367,24 @@
                 
               
 
-              <time title="Created: 2019-06-13 11:15:44 / Modified: 17:01:58" itemprop="dateCreated datePublished" datetime="2019-06-13T11:15:44+08:00">2019-06-13</time>
+              <time title="Created: 2019-06-13 11:15:44" itemprop="dateCreated datePublished" datetime="2019-06-13T11:15:44+08:00">2019-06-13</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-06-14 14:09:30" itemprop="dateModified" datetime="2019-06-14T14:09:30+08:00">2019-06-14</time>
               
             
           </span>
@@ -483,6 +495,7 @@
 <li><code>ContractEventPublisher</code> 作为消息统一发送出口，为了不涉及 <code>rabbitmq</code> 暂时以 log 的形式代替消息发送，后续在 <code>Spring Cloud Stream</code> 优化中实现完整的流程</li>
 </ul>
 <h3 id="实现消费端"><a href="#实现消费端" class="headerlink" title="实现消费端"></a>实现消费端</h3><p>从<code>DomainEvent</code>的属性中，我们可以看到有一个<code>sequenceNumber</code>字段，这个字段可以用来保证同一 aggregate 的事件顺序，那么在消费端可以以 type aggregate sequenceNumber 形成一张表，用来记录每个 aggregate 的最新状态，如果 aggregate 数据量比较大，也可以分表存储，一般 <code>aggregate_id</code> 索引之后，单表性能在百万级别，应该都没什么问题。这样在消费的时候先比较 <code>sequenceNumber</code> 差异，只消费差异值为 1 的事件，就可以保证同一 aggregate 的事件被顺序消费。之后会写篇关于 <code>Spring Cloud Stream</code> 的文章，用来作为服务之间的桥梁，并解决框架用 header 作为路由之后引起的问题，这里暂时不做深入。</p>
+<p><a href="https://github.com/soooban/AxonDemo" target="_blank" rel="noopener">完整的例子 - branch session7</a></p>
 
       
     </div>
