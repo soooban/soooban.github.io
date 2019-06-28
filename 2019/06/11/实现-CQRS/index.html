@@ -99,16 +99,16 @@
   <meta name="description" content="实现 CQRS在实现了 EventSoucing 之后，亟待解决的问题是查询了，理论上同一 Service 可以做到多数据源，甚至多数据库，这篇文章就暂时以同一个数据库为例子，同样使用 JPA 去做 view 的 ORM。 建立 entity第一步当然是建立对应的 Entity 和对应的 Repository 了： 12345678910111213141516171819202122232425">
 <meta name="keywords" content="Event Sourcing,CQRS,Axon">
 <meta property="og:type" content="article">
-<meta property="og:title" content="实现 CQRS">
+<meta property="og:title" content="Event-Sourcing 实现">
 <meta property="og:url" content="http://yoursite.com/2019/06/11/实现-CQRS/index.html">
 <meta property="og:site_name" content="CREAMS 小组">
 <meta property="og:description" content="实现 CQRS在实现了 EventSoucing 之后，亟待解决的问题是查询了，理论上同一 Service 可以做到多数据源，甚至多数据库，这篇文章就暂时以同一个数据库为例子，同样使用 JPA 去做 view 的 ORM。 建立 entity第一步当然是建立对应的 Entity 和对应的 Repository 了： 12345678910111213141516171819202122232425">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB51805c3fd6414e0932ffcf2dce1e0355?method=download&shareKey=ff7c8db748a6ab8619a3dc93021b216f">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB8472cb33ea86f97b4789dcaffc35cbf8?method=download&shareKey=0add308c7d8fd4abe01a4c4598b25eea">
-<meta property="og:updated_time" content="2019-06-14T06:09:30.698Z">
+<meta property="og:updated_time" content="2019-06-28T06:48:17.148Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="实现 CQRS">
+<meta name="twitter:title" content="Event-Sourcing 实现">
 <meta name="twitter:description" content="实现 CQRS在实现了 EventSoucing 之后，亟待解决的问题是查询了，理论上同一 Service 可以做到多数据源，甚至多数据库，这篇文章就暂时以同一个数据库为例子，同样使用 JPA 去做 view 的 ORM。 建立 entity第一步当然是建立对应的 Entity 和对应的 Repository 了： 12345678910111213141516171819202122232425">
 <meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB51805c3fd6414e0932ffcf2dce1e0355?method=download&shareKey=ff7c8db748a6ab8619a3dc93021b216f">
 
@@ -128,7 +128,7 @@
   };
 </script>
 
-  <title>实现 CQRS | CREAMS 小组</title>
+  <title>Event-Sourcing 实现 | CREAMS 小组</title>
   
 
 
@@ -344,7 +344,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">实现 CQRS
+          <h1 class="post-title" itemprop="name headline">Event-Sourcing 实现
 
               
             
@@ -387,7 +387,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-06-14 14:09:30" itemprop="dateModified" datetime="2019-06-14T14:09:30+08:00">2019-06-14</time>
+                <time title="Modified: 2019-06-28 14:48:17" itemprop="dateModified" datetime="2019-06-28T14:48:17+08:00">2019-06-28</time>
               
             
           </span>
@@ -432,7 +432,7 @@
 
           
           
-            <span id="/2019/06/11/实现-CQRS/" class="leancloud_visitors" data-flag-title="实现 CQRS">
+            <span id="/2019/06/11/实现-CQRS/" class="leancloud_visitors" data-flag-title="Event-Sourcing 实现">
               <span class="post-meta-divider">|</span>
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
@@ -555,8 +555,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/06/11/实现-Event-Sourcing/" rel="next" title="实现 Event Sourcing">
-                <i class="fa fa-chevron-left"></i> 实现 Event Sourcing
+              <a href="/2019/06/11/实现-Event-Sourcing/" rel="next" title="Event Sourcing 和 CQRS落地（四）：CQRS 实现">
+                <i class="fa fa-chevron-left"></i> Event Sourcing 和 CQRS落地（四）：CQRS 实现
               </a>
             
           </div>
@@ -565,8 +565,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/06/12/深入使用-Axon/" rel="prev" title="深入使用 Axon">
-                深入使用 Axon <i class="fa fa-chevron-right"></i>
+              <a href="/2019/06/12/深入使用-Axon/" rel="prev" title="Event Sourcing 和 CQRS落地（五）：深入使用-Axon">
+                Event Sourcing 和 CQRS落地（五）：深入使用-Axon <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>

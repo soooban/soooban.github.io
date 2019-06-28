@@ -99,14 +99,14 @@
   <meta name="description" content="深入使用 Axon实现 snapshot在前面文章中，我们略微涉及了一些 snapshot 的概念，其实这个概念还是比较好理解的，当事件堆积到一定的程度，每次 load 都会花费一定的时间，这个时候自然会想到 snapshot，先将一部分事件进行计算，然后生成一个 snapshot，后续 load 的时候先读取 snapshot，这样就省去了很多计算过程。如果你读过之前改写 event store">
 <meta name="keywords" content="Event Sourcing,CQRS,Axon">
 <meta property="og:type" content="article">
-<meta property="og:title" content="深入使用 Axon">
+<meta property="og:title" content="Event Sourcing 和 CQRS落地（五）：深入使用-Axon">
 <meta property="og:url" content="http://yoursite.com/2019/06/12/深入使用-Axon/index.html">
 <meta property="og:site_name" content="CREAMS 小组">
 <meta property="og:description" content="深入使用 Axon实现 snapshot在前面文章中，我们略微涉及了一些 snapshot 的概念，其实这个概念还是比较好理解的，当事件堆积到一定的程度，每次 load 都会花费一定的时间，这个时候自然会想到 snapshot，先将一部分事件进行计算，然后生成一个 snapshot，后续 load 的时候先读取 snapshot，这样就省去了很多计算过程。如果你读过之前改写 event store">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-06-14T06:09:30.683Z">
+<meta property="og:updated_time" content="2019-06-28T06:48:46.616Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="深入使用 Axon">
+<meta name="twitter:title" content="Event Sourcing 和 CQRS落地（五）：深入使用-Axon">
 <meta name="twitter:description" content="深入使用 Axon实现 snapshot在前面文章中，我们略微涉及了一些 snapshot 的概念，其实这个概念还是比较好理解的，当事件堆积到一定的程度，每次 load 都会花费一定的时间，这个时候自然会想到 snapshot，先将一部分事件进行计算，然后生成一个 snapshot，后续 load 的时候先读取 snapshot，这样就省去了很多计算过程。如果你读过之前改写 event store">
 
 
@@ -125,7 +125,7 @@
   };
 </script>
 
-  <title>深入使用 Axon | CREAMS 小组</title>
+  <title>Event Sourcing 和 CQRS落地（五）：深入使用-Axon | CREAMS 小组</title>
   
 
 
@@ -341,7 +341,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">深入使用 Axon
+          <h1 class="post-title" itemprop="name headline">Event Sourcing 和 CQRS落地（五）：深入使用-Axon
 
               
             
@@ -384,7 +384,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-06-14 14:09:30" itemprop="dateModified" datetime="2019-06-14T14:09:30+08:00">2019-06-14</time>
+                <time title="Modified: 2019-06-28 14:48:46" itemprop="dateModified" datetime="2019-06-28T14:48:46+08:00">2019-06-28</time>
               
             
           </span>
@@ -429,7 +429,7 @@
 
           
           
-            <span id="/2019/06/12/深入使用-Axon/" class="leancloud_visitors" data-flag-title="深入使用 Axon">
+            <span id="/2019/06/12/深入使用-Axon/" class="leancloud_visitors" data-flag-title="Event Sourcing 和 CQRS落地（五）：深入使用-Axon">
               <span class="post-meta-divider">|</span>
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
@@ -568,8 +568,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/06/11/实现-CQRS/" rel="next" title="实现 CQRS">
-                <i class="fa fa-chevron-left"></i> 实现 CQRS
+              <a href="/2019/06/11/实现-CQRS/" rel="next" title="Event-Sourcing 实现">
+                <i class="fa fa-chevron-left"></i> Event-Sourcing 实现
               </a>
             
           </div>
@@ -578,8 +578,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/06/13/实现可靠消息/" rel="prev" title="实现可靠消息">
-                实现可靠消息 <i class="fa fa-chevron-right"></i>
+              <a href="/2019/06/13/实现可靠消息/" rel="prev" title="Event Sourcing 和 CQRS落地（七）：实现可靠消息">
+                Event Sourcing 和 CQRS落地（七）：实现可靠消息 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>

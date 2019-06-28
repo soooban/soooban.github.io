@@ -99,15 +99,15 @@
   <meta name="description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSourcing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一">
 <meta name="keywords" content="Event Sourcing,Axon">
 <meta property="og:type" content="article">
-<meta property="og:title" content="实现 Event Sourcing">
+<meta property="og:title" content="Event Sourcing 和 CQRS落地（四）：CQRS 实现">
 <meta property="og:url" content="http://yoursite.com/2019/06/11/实现-Event-Sourcing/index.html">
 <meta property="og:site_name" content="CREAMS 小组">
 <meta property="og:description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSourcing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB07deaa43972f6f1bc5c35c18db67884f?method=download&shareKey=afca0c0ceb799824f9cb44104275cb6f">
-<meta property="og:updated_time" content="2019-06-14T06:09:30.687Z">
+<meta property="og:updated_time" content="2019-06-28T06:48:28.353Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="实现 Event Sourcing">
+<meta name="twitter:title" content="Event Sourcing 和 CQRS落地（四）：CQRS 实现">
 <meta name="twitter:description" content="实现 Event Soucing在了解了相关的基础之后，这里会以最简单的方式实现一个 EventSourcing 的例子，然后逐渐在之后的过程去丰富，本篇内容会实现一个将增删改操作使用 EventSoucing 取代的例子，读取部分暂时不做涉及。 Spring Boot 工程搭建打开 http://start.spring.io/ 选择对应的版本(这里是 2.1.5 )以及相应的依赖，这里多选了一">
 <meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB07deaa43972f6f1bc5c35c18db67884f?method=download&shareKey=afca0c0ceb799824f9cb44104275cb6f">
 
@@ -127,7 +127,7 @@
   };
 </script>
 
-  <title>实现 Event Sourcing | CREAMS 小组</title>
+  <title>Event Sourcing 和 CQRS落地（四）：CQRS 实现 | CREAMS 小组</title>
   
 
 
@@ -343,7 +343,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">实现 Event Sourcing
+          <h1 class="post-title" itemprop="name headline">Event Sourcing 和 CQRS落地（四）：CQRS 实现
 
               
             
@@ -386,7 +386,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-06-14 14:09:30" itemprop="dateModified" datetime="2019-06-14T14:09:30+08:00">2019-06-14</time>
+                <time title="Modified: 2019-06-28 14:48:28" itemprop="dateModified" datetime="2019-06-28T14:48:28+08:00">2019-06-28</time>
               
             
           </span>
@@ -431,7 +431,7 @@
 
           
           
-            <span id="/2019/06/11/实现-Event-Sourcing/" class="leancloud_visitors" data-flag-title="实现 Event Sourcing">
+            <span id="/2019/06/11/实现-Event-Sourcing/" class="leancloud_visitors" data-flag-title="Event Sourcing 和 CQRS落地（四）：CQRS 实现">
               <span class="post-meta-divider">|</span>
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
@@ -554,8 +554,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/06/10/UID-Generator/" rel="next" title="UID Generator">
-                <i class="fa fa-chevron-left"></i> UID Generator
+              <a href="/2019/06/10/UID-Generator/" rel="next" title="Event Sourcing 和 CQRS落地（二）：UID-Generator 实现">
+                <i class="fa fa-chevron-left"></i> Event Sourcing 和 CQRS落地（二）：UID-Generator 实现
               </a>
             
           </div>
@@ -564,8 +564,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/06/11/实现-CQRS/" rel="prev" title="实现 CQRS">
-                实现 CQRS <i class="fa fa-chevron-right"></i>
+              <a href="/2019/06/11/实现-CQRS/" rel="prev" title="Event-Sourcing 实现">
+                Event-Sourcing 实现 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>

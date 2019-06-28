@@ -99,15 +99,15 @@
   <meta name="description" content="UID Generator为什么要使用由于 Event Soucing 是记录事件的，那么 Object Id 肯定就不能是用数据库生成的了，基本上所有的 Event Soucing 相关的框架都是将事件直接序列化，然后对应到 Object，所以这种情况下，就需要自己产生 ID，而自己生成 ID 的话，就有很多限制，比如需要根据时间递增，尽量比较短，在分布式的情况下 ID 保证不能重复等等，本文会">
 <meta name="keywords" content="Event Sourcing,CQRS,UUID">
 <meta property="og:type" content="article">
-<meta property="og:title" content="UID Generator">
+<meta property="og:title" content="Event Sourcing 和 CQRS落地（二）：UID-Generator 实现">
 <meta property="og:url" content="http://yoursite.com/2019/06/10/UID-Generator/index.html">
 <meta property="og:site_name" content="CREAMS 小组">
 <meta property="og:description" content="UID Generator为什么要使用由于 Event Soucing 是记录事件的，那么 Object Id 肯定就不能是用数据库生成的了，基本上所有的 Event Soucing 相关的框架都是将事件直接序列化，然后对应到 Object，所以这种情况下，就需要自己产生 ID，而自己生成 ID 的话，就有很多限制，比如需要根据时间递增，尽量比较短，在分布式的情况下 ID 保证不能重复等等，本文会">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://note.youdao.com/yws/api/personal/file/WEB494d8493f3a2635c4dda26380c3ee06a?method=download&shareKey=ee740e662e59ad62b907200f6c1aac26">
-<meta property="og:updated_time" content="2019-06-14T06:30:40.897Z">
+<meta property="og:updated_time" content="2019-06-28T06:48:02.764Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="UID Generator">
+<meta name="twitter:title" content="Event Sourcing 和 CQRS落地（二）：UID-Generator 实现">
 <meta name="twitter:description" content="UID Generator为什么要使用由于 Event Soucing 是记录事件的，那么 Object Id 肯定就不能是用数据库生成的了，基本上所有的 Event Soucing 相关的框架都是将事件直接序列化，然后对应到 Object，所以这种情况下，就需要自己产生 ID，而自己生成 ID 的话，就有很多限制，比如需要根据时间递增，尽量比较短，在分布式的情况下 ID 保证不能重复等等，本文会">
 <meta name="twitter:image" content="https://note.youdao.com/yws/api/personal/file/WEB494d8493f3a2635c4dda26380c3ee06a?method=download&shareKey=ee740e662e59ad62b907200f6c1aac26">
 
@@ -127,7 +127,7 @@
   };
 </script>
 
-  <title>UID Generator | CREAMS 小组</title>
+  <title>Event Sourcing 和 CQRS落地（二）：UID-Generator 实现 | CREAMS 小组</title>
   
 
 
@@ -343,7 +343,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">UID Generator
+          <h1 class="post-title" itemprop="name headline">Event Sourcing 和 CQRS落地（二）：UID-Generator 实现
 
               
             
@@ -386,7 +386,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-06-14 14:30:40" itemprop="dateModified" datetime="2019-06-14T14:30:40+08:00">2019-06-14</time>
+                <time title="Modified: 2019-06-28 14:48:02" itemprop="dateModified" datetime="2019-06-28T14:48:02+08:00">2019-06-28</time>
               
             
           </span>
@@ -431,7 +431,7 @@
 
           
           
-            <span id="/2019/06/10/UID-Generator/" class="leancloud_visitors" data-flag-title="UID Generator">
+            <span id="/2019/06/10/UID-Generator/" class="leancloud_visitors" data-flag-title="Event Sourcing 和 CQRS落地（二）：UID-Generator 实现">
               <span class="post-meta-divider">|</span>
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
@@ -548,8 +548,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/06/10/Event-Sourcing-And-CQRS/" rel="next" title="Event Sourcing And CQRS">
-                <i class="fa fa-chevron-left"></i> Event Sourcing And CQRS
+              <a href="/2019/06/10/Event-Sourcing-And-CQRS/" rel="next" title="Event Sourcing 和 CQRS落地（一）：前言">
+                <i class="fa fa-chevron-left"></i> Event Sourcing 和 CQRS落地（一）：前言
               </a>
             
           </div>
@@ -558,8 +558,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/06/11/实现-Event-Sourcing/" rel="prev" title="实现 Event Sourcing">
-                实现 Event Sourcing <i class="fa fa-chevron-right"></i>
+              <a href="/2019/06/11/实现-Event-Sourcing/" rel="prev" title="Event Sourcing 和 CQRS落地（四）：CQRS 实现">
+                Event Sourcing 和 CQRS落地（四）：CQRS 实现 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
