@@ -323,6 +323,234 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/12/RabbitMQ-延时消息的应用与实现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Jokefaker">
+      <meta itemprop="description" content="记录小伙伴们的分享">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CREAMS 小组">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/03/12/RabbitMQ-延时消息的应用与实现/" class="post-title-link" itemprop="url">RabbitMQ 延时消息的应用与实现</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2020-03-12 15:31:02 / Modified: 15:37:20" itemprop="dateCreated datePublished" datetime="2020-03-12T15:31:02+08:00">2020-03-12</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/后端/" itemprop="url" rel="index"><span itemprop="name">后端</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <span class="post-meta-item-text">Comments: </span>
+                <a href="/2020/03/12/RabbitMQ-延时消息的应用与实现/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2020/03/12/RabbitMQ-延时消息的应用与实现/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+            <span id="/2020/03/12/RabbitMQ-延时消息的应用与实现/" class="leancloud_visitors" data-flag-title="RabbitMQ 延时消息的应用与实现">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Views: </span>
+              
+                <span class="leancloud-visitors-count"></span>
+            </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在实际的业务开发中，经常会碰到一些类似定时的任务，比如每天早上 9 点提醒用户业务进度，或者 30 分钟后锁定某个账单之类的操作。类似这样的业务需求，比较古老的操作就是使用各种定时器来实现，然而面对现在的开发更新速度，以及容器化、微服务架构的流行和普及，原本类似 <code>Crontab</code> 这种简单的东西使用起来会有各种限制，比如在最简单的情况你可以使用 <code>Spring</code> 的 <code>@Scheduled</code> 注解来轻松的实现一些定时需求，但现在你可能就需要考虑多如何将定时任务分配给多个节点，某个时间重新构建容器会不会丢失一些定时任务等等一些问题。这种情况延迟消息能解决掉我们大部分的需求，大概的流程就是丢一个消息给中间件，告诉它什么时候投递出去，投递后再由消费端消费（负责去通知/发邮件/发短信）。由于我们公司一直使用的 <code>Spring Cloud</code> 全家桶，<code>RabbitMQ</code> 也已经使用很多年，这里就讲讲如何在<code>Spring Cloud Stream RabbitMQ</code>下以最小的成本实现延时消息，所以在阅读文章时可能需要有 <code>Spring Cloud Stream</code> 相关的基础知识。</p>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>实际上 <code>RabbitMQ</code> 的延迟消息是通过 <code>rabbitmq-delayed-message-exchange</code> 这个插件实现的，开启了这个插件之后，只要在 <code>exchange</code> 上定义 <code>x-delayed-message</code> 类型，然后在发送消息的时候 <code>header</code> 带上 <code>x-delay</code> (毫秒数)，就可以实现延迟消息。我们可以利用这一特性，来实现消息的延迟/定时发送。<br><img src="https://jokefaker.oss-cn-hangzhou.aliyuncs.com/article/rabbitmq-delay.png" alt><br>理想的模型是这个样子的，但实际在应用中难免会有一些出入，在文末问题区会做一些相关的讨论。</p>
+<h3 id="RabbieMQ-插件安装"><a href="#RabbieMQ-插件安装" class="headerlink" title="RabbieMQ 插件安装"></a>RabbieMQ 插件安装</h3><p>由于我们的 RabbitMQ 服务器都是跑在 <code>Docker</code> 容器里，所以这里就相对简单，新建一个 Dockerfile：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">FROM rabbitmq:3.7.8-management-alpine</span><br><span class="line"></span><br><span class="line">RUN cd /plugins \</span><br><span class="line">&amp;&amp; wget https://dl.bintray.com/rabbitmq/community-plugins/3.7.x/rabbitmq_delayed_message_exchange/rabbitmq_delayed_message_exchange-20171201-3.7.x.zip \</span><br><span class="line">&amp;&amp; unzip rabbitmq_delayed_message_exchange-20171201-3.7.x.zip \</span><br><span class="line">&amp;&amp; rm rabbitmq_delayed_message_exchange-20171201-3.7.x.zip \</span><br><span class="line">&amp;&amp; rabbitmq-plugins enable rabbitmq_delayed_message_exchange</span><br></pre></td></tr></table></figure>
+
+<p>如果你使用的是 3.8.x 版本，注意修改对应的版本。另外要是不跑在容器当中，<code>RabbitMQ</code> 官网也有说明，这里就不再赘述。</p>
+<h3 id="Sprint-Cloud-Stream-优化"><a href="#Sprint-Cloud-Stream-优化" class="headerlink" title="Sprint Cloud Stream 优化"></a>Sprint Cloud Stream 优化</h3><p><code>stream</code> 配置有以下几个问题：</p>
+<ul>
+<li>需要在配置中编写 <code>destination</code> 等配置，然而这些配置往往都是模板化的</li>
+<li>配置完毕后，代码中还需要将 channel 和 bean  的名称对应上，属于 hard code，如果对不上，或者某一边忘记删除，都会出错</li>
+</ul>
+<p>实际上在我们整个微服务的使用来看，大部分的配置内容都是一样的，我们先来看一下比较常见的模板：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">xxx-events: # 这里是 input</span><br><span class="line">	group: yyy-service</span><br><span class="line">	contentType: application/json # 新的 stream 版本可以提供默认配置，不用每个指定</span><br><span class="line">	durableSubscription: true</span><br><span class="line">yyy-events: # 这里是 output</span><br><span class="line">	destination: yyy-events</span><br><span class="line">	contentType: application/json # 新的 stream 版本可以提供默认配置，不用每个指定</span><br></pre></td></tr></table></figure>
+
+<p>如果一个 service 以领域事件向外输出消息，那么 <code>RabbitMQ</code> 的模板长成这个样子是比较常见的，统一由 yyy-events 发出领域事件，通过 xxx-events（各种领域）来接收领域事件。这样实际我们只需要根据服务的名称去生成对应的配置即可，如果你自己的业务有所不同，则需要根据自己的使用方式来生成配置。</p>
+<p>下面给出实现上述配置的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@ConditionalOnClass(RabbitServiceAutoConfiguration.class)</span><br><span class="line">public class StreamAutoConfiguration &#123;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private ConfigurableEnvironment environment;</span><br><span class="line"></span><br><span class="line">    private static final String PROPERTY_SOURCE_NAME = &quot;creams-stream-rabbit-spring-boot-starter:stream-rabbit-config-properties&quot;;</span><br><span class="line"></span><br><span class="line">    private static final String RABBIT_PREFIX = &quot;spring.cloud.stream.rabbit.bindings.&quot;;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private ApplicationContext context;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Bean</span><br><span class="line">    @Primary</span><br><span class="line">    BindingServiceProperties customProps(BindingServiceProperties bindingServiceProperties) &#123;</span><br><span class="line"></span><br><span class="line">        Map&lt;String, Object&gt; beanMap = context.getBeansWithAnnotation(EnableBinding.class);</span><br><span class="line"></span><br><span class="line">        Map&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">        beanMap.forEach((key, value) -&gt; &#123;</span><br><span class="line">            EnableBinding annotation = context.findAnnotationOnBean(key, EnableBinding.class);</span><br><span class="line">            if (annotation != null) &#123;</span><br><span class="line">                setPropsForAnnotation(annotation, map, bindingServiceProperties);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        addOrReplace(environment.getPropertySources(), map);</span><br><span class="line"></span><br><span class="line">        return bindingServiceProperties;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private void setPropsForAnnotation(EnableBinding annotation, Map&lt;String, Object&gt; map, BindingServiceProperties bindingServiceProperties) &#123;</span><br><span class="line">        Stream.of(annotation.value()).forEach(type -&gt; ReflectionUtils.doWithMethods(type, method -&gt; &#123;</span><br><span class="line">            Input input = AnnotationUtils.findAnnotation(method, Input.class);</span><br><span class="line">            Output output = AnnotationUtils.findAnnotation(method, Output.class);</span><br><span class="line">            Destination destination = AnnotationUtils.findAnnotation(method, Destination.class);</span><br><span class="line"></span><br><span class="line">            String destinationName = Optional.ofNullable(destination).map(Destination::destination).orElse(&quot;&quot;);</span><br><span class="line">            if (input != null) &#123;</span><br><span class="line">                // 设置 input 的内容</span><br><span class="line">                if (StringUtils.isEmpty(destinationName)) &#123;</span><br><span class="line">                    destinationName = input.value();</span><br><span class="line">                &#125;</span><br><span class="line">                String name = BindingBeanDefinitionRegistryUtils</span><br><span class="line">                    .getBindingTargetName(input, method);</span><br><span class="line">                BindingProperties properties = bindingServiceProperties.getBindingProperties(name);</span><br><span class="line">                properties.setGroup(getApplicationName());</span><br><span class="line">                properties.setDestination(destinationName);</span><br><span class="line">                String rabbitPrefix = RABBIT_PREFIX + name + &quot;.consumer&quot;;</span><br><span class="line">                map.put(rabbitPrefix + &quot;.autoBindDlq&quot;, true);</span><br><span class="line">                map.put(rabbitPrefix + &quot;.republishToDlq&quot;, true);</span><br><span class="line">                map.put(rabbitPrefix + &quot;.deadLetterQueueName&quot;, getErrorQueueName());</span><br><span class="line">                // 如果注解上声明了 isDelayedExchange 为 true，则加上对应的配置</span><br><span class="line">                if (Optional.ofNullable(destination).map(Destination::isDelayedExchange).orElse(false)) &#123;</span><br><span class="line">                    map.put(rabbitPrefix + &quot;.delayedExchange&quot;, true);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; else if (output != null) &#123;</span><br><span class="line">                // 设置 output 的内容</span><br><span class="line">                if (StringUtils.isEmpty(destinationName)) &#123;</span><br><span class="line">                    destinationName = output.value();</span><br><span class="line">                &#125;</span><br><span class="line">                String name = BindingBeanDefinitionRegistryUtils</span><br><span class="line">                    .getBindingTargetName(output, method);</span><br><span class="line">                BindingProperties properties = bindingServiceProperties.getBindingProperties(name);</span><br><span class="line">                properties.setDestination(destinationName);</span><br><span class="line"></span><br><span class="line">                String rabbitPrefix = RABBIT_PREFIX + name + &quot;.producer&quot;;</span><br><span class="line">                // 如果注解上声明了 isDelayedExchange 为 true，则加上对应的配置</span><br><span class="line">                if (Optional.ofNullable(destination).map(Destination::isDelayedExchange).orElse(false)) &#123;</span><br><span class="line">                    map.put(rabbitPrefix + &quot;.delayedExchange&quot;, true);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private String getApplicationName() &#123;</span><br><span class="line">        return environment.getProperty(&quot;spring.application.name&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 定义 DLQ 的名称</span><br><span class="line">    public String getErrorQueueName() &#123;</span><br><span class="line">        return getPureServiceName() + &quot;-error.dlq&quot;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 这里由于我们自己的服务通常起名 creams-xxx-service, 所以会做一次去头去尾的操作，你可以自定义</span><br><span class="line">    private String getPureServiceName() &#123;</span><br><span class="line">        String[] names = getApplicationName().split(&quot;-&quot;);</span><br><span class="line">        List&lt;String&gt; nameList = new ArrayList&lt;&gt;(Arrays.asList(names));</span><br><span class="line">        if (nameList.size() &gt;= 3) &#123;</span><br><span class="line">            nameList.remove(0);</span><br><span class="line">            nameList.remove(nameList.size() - 1);</span><br><span class="line">        &#125;</span><br><span class="line">        return String.join(&quot;-&quot;, nameList);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 添加或者替换 KV</span><br><span class="line">    private void addOrReplace(MutablePropertySources propertySources,</span><br><span class="line">                              Map&lt;String, Object&gt; map) &#123;</span><br><span class="line"></span><br><span class="line">        MapPropertySource target = null;</span><br><span class="line">        if (propertySources.contains(PROPERTY_SOURCE_NAME)) &#123;</span><br><span class="line">            PropertySource&lt;?&gt; source = propertySources.get(PROPERTY_SOURCE_NAME);</span><br><span class="line">            if (source instanceof MapPropertySource) &#123;</span><br><span class="line">                target = (MapPropertySource) source;</span><br><span class="line">                for (String key : map.keySet()) &#123;</span><br><span class="line">                    if (!target.containsProperty(key)) &#123;</span><br><span class="line">                        target.getSource().put(key, map.get(key));</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        if (target == null) &#123;</span><br><span class="line">            target = new MapPropertySource(PROPERTY_SOURCE_NAME, map);</span><br><span class="line">        &#125;</span><br><span class="line">        if (!propertySources.contains(PROPERTY_SOURCE_NAME)) &#123;</span><br><span class="line">            propertySources.addLast(target);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 提供一个注解，用于自定义一些内容</span><br><span class="line">@Target(&#123; ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE,</span><br><span class="line">    ElementType.PARAMETER &#125;)</span><br><span class="line">@Retention(RetentionPolicy.RUNTIME)</span><br><span class="line">@Inherited</span><br><span class="line">@Documented</span><br><span class="line">public @interface Destination &#123;</span><br><span class="line"></span><br><span class="line">    @AliasFor(&quot;destination&quot;)</span><br><span class="line">    String value() default &quot;&quot;;</span><br><span class="line"></span><br><span class="line">    @AliasFor(&quot;value&quot;)</span><br><span class="line">    String destination() default &quot;&quot;;</span><br><span class="line"></span><br><span class="line">    boolean isDelayedExchange() default false;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="延迟消息的实现"><a href="#延迟消息的实现" class="headerlink" title="延迟消息的实现"></a>延迟消息的实现</h3><p>这里我以实现一个小 Demo 来展示所要实现的东西，这个 Demo 实现发送延迟消息，并自我接收后消费消息。为了节省篇幅，这里略去 Demo 工程的建立以及配置过程，文末将附上地址。</p>
+<ul>
+<li>建立输入输出的 <code>interface</code> ：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public interface BindingChannelOutput &#123;</span><br><span class="line"></span><br><span class="line">    String DEMO_EVENTS = &quot;demo-events&quot;;</span><br><span class="line"></span><br><span class="line">    @Output(DEMO_EVENTS)</span><br><span class="line">    @Destination(isDelayedExchange = true)</span><br><span class="line">    MessageChannel contract();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public interface BindingChannelInput &#123;</span><br><span class="line"></span><br><span class="line">    String DEMO_INPUTS = &quot;demo-events&quot;;</span><br><span class="line"></span><br><span class="line">    @Input(DEMO_INPUTS)</span><br><span class="line">    @Destination(isDelayedExchange = true)</span><br><span class="line">    SubscribableChannel input();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意这里和一般的 <code>Stream</code> 例子 有一些不一样， 用到了我们之前优化的注解，<code>isDelayedExchange</code> 可以指定为 <code>delay exchange</code>。</p>
+<ul>
+<li>再建立一个 <code>publisher</code> 用于发送消息，以及一个 <code>Listener</code> 用于接收消息</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">@AllArgsConstructor</span><br><span class="line">@Slf4j</span><br><span class="line">public class Publisher &#123;</span><br><span class="line"></span><br><span class="line">    private final BindingChannelOutput outputChannel;</span><br><span class="line"></span><br><span class="line">    public void send(String content, Long delayMillSeconds) &#123;</span><br><span class="line"></span><br><span class="line">        MessageBuilder&lt;String&gt; builder = MessageBuilder.withPayload(content);</span><br><span class="line">        if (delayMillSeconds &gt; 0) &#123;</span><br><span class="line">            builder.setHeader(&quot;x-delay&quot;, delayMillSeconds);</span><br><span class="line">        &#125;</span><br><span class="line">        log.info(MessageFormat.format(&quot;pushing message [&#123;0&#125;] to remote&quot;, content));</span><br><span class="line">        outputChannel.output().send(builder.build());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@Component</span><br><span class="line">@Slf4j</span><br><span class="line">public class Listener &#123;</span><br><span class="line"></span><br><span class="line">    @StreamListener(BindingChannelInput.DEMO_INPUTS)</span><br><span class="line">    public void update(@Payload String test) &#123;</span><br><span class="line">        // 发通知/邮件/短信</span><br><span class="line">        log.info(MessageFormat.format(&quot;received message [&#123;0&#125;]&quot;, test));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>启动工程后在 <code>RabbitMQ</code> 的控制台应该可以看到两个 <code>queue</code> ，一个是 <code>demo-events.demo-service</code> 另一个是 <code>demo-service-error.dlq</code> ，这说明我们的配置优化生效了。</p>
+<ul>
+<li>写一个接口来测试延迟消息</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@RestController</span><br><span class="line">@AllArgsConstructor</span><br><span class="line">public class TestController &#123;</span><br><span class="line">    </span><br><span class="line">    private Publisher publisher;</span><br><span class="line">    </span><br><span class="line">    @PostMapping(&quot;/test&quot;)</span><br><span class="line">    public void test(@RequestParam(&quot;content&quot;) String content) &#123;</span><br><span class="line">        </span><br><span class="line">        publisher.send(content, 20000L);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在控制台可以看到打印时间相差 20s</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2020-03-10 17:17:40.691  INFO 77487 --- [nio-8080-exec-5] com.example.demo.Publisher               : pushing message [&quot;测试&quot;] to remote</span><br><span class="line">2020-03-10 17:18:00.483  INFO 77487 --- [.demo-service-1] com.example.demo.Listener                : received message [&quot;测试&quot;]</span><br></pre></td></tr></table></figure>
+
+<p>至此延迟消息的实现就完成了，具体到业务的话，都是在消费端进行，比如做一些邮件/短信发送或者通知之类的。</p>
+<h2 id="问题-amp-思考"><a href="#问题-amp-思考" class="headerlink" title="问题&amp;思考"></a>问题&amp;思考</h2><h3 id="发出去的消息不可查询"><a href="#发出去的消息不可查询" class="headerlink" title="发出去的消息不可查询"></a>发出去的消息不可查询</h3><p>当我们的业务服务向 <code>RabbitMQ</code> 发送消息后，<code>RabbitMQ</code> 在没有到时间的时候是看不到的，那么要保证可靠，就需要在业务服务中记录是否投递到 <code>RabbitMQ</code>，可以参考可靠消息的投递，在本地做记录。</p>
+<h3 id="延迟时间的限制"><a href="#延迟时间的限制" class="headerlink" title="延迟时间的限制"></a>延迟时间的限制</h3><p>文档中提到过延迟的最大毫秒数是 2^32-1 ，大概是 49 天多一点，不过一般也不会往 <code>RabbitMQ</code> 堆这么长时间的消息。一般如果是 1-2 天内需要推送/发通知的业务，我们会直接丢给 <code>RabbitMQ</code>，剩下的比如定了一个一年后的提醒之类的业务，都采用在夜间流量少的时候去查一下第二天需要发送的内容，然后丢到 <code>RabbitMQ</code> 来完成。所以定时之类的操作根据业务的具体情况可能还会存在，但是会大大减少。</p>
+<h3 id="禁用插件后所有的未发布的消息会丢失"><a href="#禁用插件后所有的未发布的消息会丢失" class="headerlink" title="禁用插件后所有的未发布的消息会丢失"></a>禁用插件后所有的未发布的消息会丢失</h3><p>这个其实还好，一般不会去做这样的操作。</p>
+<h3 id="delay-exchange-的路由类型"><a href="#delay-exchange-的路由类型" class="headerlink" title="delay exchange 的路由类型"></a>delay exchange 的路由类型</h3><p>路由类型还是取决于 exchange 本身的类型，由于 <code>Spring Cloud Stream</code> 默认都是 topic 类型，所以这里保持一致。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/14/服务优化/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1847,7 +2075,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-06-28 15:20:13" itemprop="dateModified" datetime="2019-06-28T15:20:13+08:00">2019-06-28</time>
+                <time title="Modified: 2019-06-28 15:22:13" itemprop="dateModified" datetime="2019-06-28T15:22:13+08:00">2019-06-28</time>
               
             
           </span>
@@ -1941,7 +2169,7 @@
 <li><a href="/2019/06/11/实现-CQRS/" title="Event Sourcing 和 CQRS落地（四）：CQRS 实现">Event Sourcing 和 CQRS落地（四）：CQRS 实现</a></li>
 <li><a href="/2019/06/12/深入使用-Axon/" title="Event Sourcing 和 CQRS落地（五）：深入使用-Axon">Event Sourcing 和 CQRS落地（五）：深入使用-Axon</a></li>
 <li><a href="/2019/06/13/实现可靠消息/" title="Event Sourcing 和 CQRS落地（六）：实现可靠消息">Event Sourcing 和 CQRS落地（六）：实现可靠消息</a></li>
-<li><a href="/2019/06/13/Spring-Cloud-Stream-优化/" title="Event Sourcing 和 CQRS落地（七）：Spring-Cloud-Stream 优化">Event Sourcing 和 CQRS落地（七）：Spring-Cloud-Stream 优化</a></li>
+<li><a href="/2019/06/13/Spring-Cloud-Stream-优化/" title="Event Sourcing 和 CQRS落地（七）：Spring-Cloud-Stream 优化">Event Sourcing 和 CQRS落地（七）：Spring-Cloud-Stream 优化</a>he</li>
 <li><a href="/2019/06/14/服务优化/" title="Event Sourcing 和 CQRS落地（八）：服务优化">Event Sourcing 和 CQRS落地（八）：服务优化</a>
 
 </li>
@@ -2236,7 +2464,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-count">10</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -2326,7 +2554,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
